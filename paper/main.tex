@@ -126,6 +126,26 @@ theory fails, and Appendix~\ref{app:std_anatomy} provides a detailed anatomy
 of the standard DEC failure mode.
 
 
+% --- 1.1 Exact periodic cochain complex ---
+\subsection{Exact periodic cochain complex (condition~B)}
+\label{sec:exact_complex}
+
+The standard Bloch-periodic coboundary operators are obtained by
+multiplying each incidence entry by a phase $e^{ik \cdot n_e L}$, where
+$n_e \in \mathbb{Z}^3$ is the lattice shift of edge~$e$. This simple
+phasing does not preserve the cochain complex: generically
+$d_1(k)\, d_0(k) \neq 0$ at $k \neq 0$.
+
+The construction of~\cite{paper1} modifies the $1$-coboundary operator
+via a recursive correction that redistributes lattice shifts among the
+edges of each face. The corrected operator $d_{1,\mathrm{ex}}(k)$
+satisfies $d_1(k)\, d_0(k) = 0$ for all~$k$ while preserving the
+$\Gamma$-point operator $d_1(0)$ and the support structure of the
+incidence matrix. The $2$-coboundary $d_2(k)$ requires no correction:
+$d_2 d_1 = 0$ holds automatically (it is the topological identity
+$\partial^2 = 0$). Full details are given in~\cite{paper1}.
+
+
 % ============================================================================
 % §2. METRIC IDENTITIES
 % ============================================================================
