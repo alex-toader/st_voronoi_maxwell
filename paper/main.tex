@@ -95,10 +95,10 @@ $G = H = \lambda I$ (\S\ref{sec:converse}). Necessity of~(B) is supported
 numerically: all tested violations of exactness yield $c \neq 1$ with $O(1)$
 error (\S\ref{sec:exactness}).
 
-The theorem states $\omega^2 = |k|^2 + O(|k|^4)$: the long-wavelength wave
-speed is exactly unity at any finite mesh resolution. This is a geometric
-identity, not a convergence statement---no mesh refinement or effective medium
-limit is required. The $O(|k|^4)$ dispersion correction is
+The theorem states $\omega^2 = |k|^2 + O(|k|^4)$: the leading dispersion
+coefficient is exactly unity at any finite mesh resolution. This is a
+geometric identity, not a convergence statement---no mesh refinement or
+effective medium limit is required. The $O(|k|^4)$ dispersion correction is
 structure-dependent (analogous to $\omega = 2\sin(k/2)$ on a 1D chain), but
 the leading term is universal across all periodic Voronoi tessellations. The
 Voronoi DEC with exact complex is ``already homogenized'': the discrete
@@ -332,6 +332,16 @@ $\rank\{(\Delta x_e) \otimes (\Delta x_e) : e \in E\} = 6$,
 so $\dim \mathcal{A} = |E| - 6$.
 \end{proposition}
 
+\begin{proof}
+The map $v \mapsto v \otimes v$ sends $\mathbb{R}^3$ into the 6-dimensional
+space of symmetric matrices~$\mathrm{Sym}^2(\mathbb{R}^3)$. Since three
+linearly independent vectors $v_1, v_2, v_3$ produce six linearly
+independent symmetric matrices $\{v_i \otimes v_i,\,
+(v_i + v_j) \otimes (v_i + v_j)\}_{i<j}$ (the latter isolating
+cross terms $v_i \otimes v_j + v_j \otimes v_i$), the spanning condition
+ensures rank~6.
+\end{proof}
+
 The Voronoi Hodge star is one point in~$\mathcal{A}$; the remaining
 $|E|-6$ degrees of freedom parameterize perturbations of~$\star_1$ that
 preserve $c = 1$. Numerically, the admissible cone
@@ -361,7 +371,7 @@ C15 ($N\!=\!2$) & 432 & 864 & $10^{-15}$ & $10^{-16}$ \\
 Weaire--Phelan ($N\!=\!2$) & 368 & 736 & $10^{-16}$ & $10^{-16}$ \\
 Random ($n\!=\!80$, 5~seeds) & 540--570 & 1080--1140
   & $10^{-12}$ & $10^{-12}$ \\
-Degenerate (ratio 40$\times$) & --- & --- & $10^{-12}$ & $10^{-12}$ \\
+Degenerate ($n\!=\!60$, ratio 40$\times$) & 410 & 820 & $10^{-12}$ & $10^{-12}$ \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -409,7 +419,7 @@ determines the discrete dispersion relation $\omega^2(k)$.
 At $k = 0$ (the $\Gamma$~point), the first cohomology
 $H^1(\mathbb{T}^3) \cong \mathbb{R}^3$ is spanned by harmonic 1-forms
 \begin{equation}
-  h_\alpha = \frac{(\Delta x_e)_\alpha}{\sqrt{\Vol}}, \quad \alpha = 1,2,3,
+  (h_\alpha)_e = \frac{(\Delta x_e)_\alpha}{\sqrt{\Vol}}, \quad \alpha = 1,2,3,
   \label{eq:harm}
 \end{equation}
 which are $M$-orthonormal:
@@ -496,6 +506,11 @@ $\ker(d_2(0)) = \im(d_1(0)) \oplus H^2$ (Hodge decomposition). Since
 $u_{\mathrm{im}}$ has already been separated, the remaining $u_\perp$ lies
 in $\ker(d_2(0))$ at leading order: the $\im(d_2^\dagger)$ components
 enter only at $O(k^2)$, contributing $O(k^4)$ to~$\omega^2$.
+To see this, write $d_2(k) = d_2(0) + \Delta d_2$ with
+$\Delta d_2 = O(k)$. From $d_2(k)\, u = 0$ and $u = O(k)$,
+we get $d_2(0)\, u_\perp = -\Delta d_2\, u = O(k^2)$. Since $d_2(0)$
+is invertible on $\im(d_2^\dagger)$, the coexact component of~$u_\perp$
+is $O(k^2)$.
 Therefore
 \begin{equation}
   (u_\perp)_\alpha = \sum_\beta C_{\beta\alpha}\, (h_2)_\beta + O(k^2),
@@ -553,7 +568,11 @@ $
 \begin{proof}
 The Bloch coboundary operator satisfies
 $d_1(k)[f,e] = d_1(0)[f,e] \cdot e^{i k \cdot n_e L}$,
-where $n_e \in \mathbb{Z}^3$ is the lattice shift for edge~$e$.
+where $n_e \in \mathbb{Z}^3$ is the lattice shift for edge~$e$: if
+edge~$e$ crosses the periodic boundary in direction~$\mu$, then
+$(n_e)_\mu = \pm 1$; otherwise $(n_e)_\mu = 0$. The product
+$(n_e L)_\gamma$ is the $\gamma$-component of the lattice displacement
+associated with crossing the boundary along~$e$.
 Since $d_1(0)\, h = 0$ (ingredient~2), the $k$-derivative at $k = 0$ is
 \begin{equation}
   \frac{\partial}{\partial k_\gamma} [d_1(k)\, h_\alpha]_f \bigg|_0
@@ -562,14 +581,16 @@ Since $d_1(0)\, h = 0$ (ingredient~2), the $k$-derivative at $k = 0$ is
   \label{eq:curl_deriv}
 \end{equation}
 The sum $\sum_{e \in \partial f} d_1[f,e] \cdot (n_e L)_\gamma (\Delta x_e)_\alpha$
-is a discrete Stokes integral: each term
+is a discrete Stokes integral. In the universal cover (unfolded torus),
+the vertices of face~$f$ have well-defined coordinates; the lattice
+shifts~$n_e L$ restore the full position differences that are lost in
+the quotient by periodicity. Each term
 $(n_e L)_\gamma\, (\Delta x_e)_\alpha$ is the $\gamma\alpha$-component of
-the parallelogram spanned by $n_e L$ and $\Delta x_e$. Summing around the
-boundary of face~$f$ (Stokes' theorem:
-$\oint_{\partial f} x_\gamma\, dx_\alpha
-= \int_f (\partial_\alpha x_\gamma - \partial_\gamma x_\alpha)\, dA
-= \varepsilon_{\beta'\gamma\alpha} (A_f)_{\beta'}$)
-gives
+the parallelogram spanned by $n_e L$ and $\Delta x_e$, and summing
+around the boundary of face~$f$ gives the oriented area by the
+discrete Stokes formula
+($\oint_{\partial f} x_\gamma\, dx_\alpha
+= \varepsilon_{\beta'\gamma\alpha} (A_f)_{\beta'}$):
 \begin{equation}
   \sum_{e \in \partial f} d_1[f,e] \cdot (n_e L)_\gamma (\Delta x_e)_\alpha
   = \varepsilon_{\beta'\gamma\alpha}\, (A_f)_{\beta'}.
@@ -825,11 +846,11 @@ $\tr K$ and variance $\tr K^2$ are identical.
 \section{Discussion}
 \label{sec:discussion}
 
-The discrete electromagnetic wave speed on a periodic Voronoi complex with
-exact cochain complex is exactly unity in natural units. This is not a
-fitted parameter, not an emergent property of dynamics, and not an
-approximation that improves with refinement: it is a geometric identity at
-any finite resolution.
+The leading dispersion coefficient on a periodic Voronoi complex with
+exact cochain complex is exactly unity in natural units:
+$\omega^2 = |k|^2 + O(|k|^4)$. This is not a fitted parameter, not an
+emergent property of dynamics, and not an approximation that improves
+with refinement: it is a geometric identity at any finite resolution.
 
 \emph{Already homogenized.}
 The metric identities $G = H = \Vol \cdot I$ are the discrete analog of a
