@@ -346,20 +346,21 @@ orthant.
 
 \begin{proposition}
 \label{prop:rank6}
-If every vertex has degree $\geq 4$ and the edge directions at each vertex
-span~$\mathbb{R}^3$, then
+If the edge directions $\{\Delta x_e : e \in E\}$ are not contained in a
+quadric cone (i.e.\ no nonzero symmetric $Q$ satisfies
+$(\Delta x_e)^\top Q\, (\Delta x_e) = 0$ for all~$e$), then
 $\rank\{(\Delta x_e) \otimes (\Delta x_e) : e \in E\} = 6$,
 so $\dim \mathcal{A} = |E| - 6$.
 \end{proposition}
 
 \begin{proof}
-The map $v \mapsto v \otimes v$ sends $\mathbb{R}^3$ into the 6-dimensional
-space of symmetric matrices~$\mathrm{Sym}^2(\mathbb{R}^3)$. Since three
-linearly independent vectors $v_1, v_2, v_3$ produce six linearly
-independent symmetric matrices $\{v_i \otimes v_i,\,
-(v_i + v_j) \otimes (v_i + v_j)\}_{i<j}$ (the latter isolating
-cross terms $v_i \otimes v_j + v_j \otimes v_i$), the spanning condition
-ensures rank~6.
+The symmetric rank-1 matrices $\Delta x_e \otimes \Delta x_e$ lie in the
+6-dimensional space $\mathrm{Sym}^2(\mathbb{R}^3)$. Their span has
+dimension $< 6$ iff some nonzero $Q \in \mathrm{Sym}^2$ is orthogonal
+to all of them: $\tr(Q\, \Delta x_e \otimes \Delta x_e)
+= (\Delta x_e)^\top Q\, (\Delta x_e) = 0$ for all~$e$, meaning all
+edge directions lie on the quadric cone $\{v : v^\top Q\, v = 0\}$.
+This is verified to fail (rank $= 6$) on all tested structures.
 \end{proof}
 
 The Voronoi Hodge star is one point in~$\mathcal{A}$; the remaining
@@ -560,7 +561,8 @@ sector entirely. The Schur complement involves only optical modes.
 The Schur complement is
 $S = \mathcal{H}_3 - B\, D^{-1} B^\dagger$,
 where $B$ couples harmonics to optical modes and $D$ is the optical block.
-At~$\Gamma$, $D > 0$ with gap $\sim 0.54$--$0.60$; by continuity,
+At~$\Gamma$, $D > 0$ with gap $\sim 0.54$--$0.60$ (observed numerically
+across all tested structures); by continuity,
 $D(k) = D(0) + O(k)$ remains invertible at small~$k$.
 The optical modes at~$\Gamma$ span $\im(d_1(0)^\dagger)$ in edge space;
 their images under~$d_1(0)$ span $W = \im(d_1(0))$ in face space.
