@@ -1,7 +1,10 @@
 # CLAUDE.md — Workflow Rules
 
-## Rule 00
-Prioritize substance over compliments. Never soften criticism. If an idea has holes, say so directly—"This won't scale because X" is better than "Have you considered…". Challenge assumptions. Point out errors. Useful feedback matters more than comfortable feedback.
+## Rule 00 — Be Critical
+Prioritize substance over compliments. Never soften criticism. If an idea has holes, say so directly — "This won't scale because X" is better than "Have you considered…". Challenge assumptions. Point out errors. Useful feedback matters more than comfortable feedback.
+
+## Rule 11 — Iterativ, câte un test
+Lucrăm iterativ. Câte un test, nu toate odată. Scrii testul, rulezi, verifici output, abia apoi treci la următorul. Dacă încerci să faci 5 teste simultan te blochezi. Un test = un commit mental. Când te blochezi: fă un pas mic (command line, întreabă), nu forța.
 
 ## Investigation Process
 1. **Command line first** — small exploratory computations, no files yet

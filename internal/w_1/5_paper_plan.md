@@ -31,9 +31,22 @@ Together → c = 1. Errors are separable and quantifiable.
 ### §2 Metric identities G = H = Vol·I
 - **Theorem:** On any periodic Voronoi tessellation, G_ij = Σ_e ⋆₁[e] Δx_iΔx_j = Vol·δ_ij
 - **Proof:** Divergence theorem on each Voronoi cell (Voronoi perpendicularity → boundary
-  integral telescopes → pillars tile space isotropically)
+  integral telescopes → pillars tile space isotropically).
+  Proof structure: 4 terms. Term 1 = 0 (per-vertex flux closure: Σ_{e∋v} sign·⋆₁·Δx = 0
+  on each closed Voronoi cell). Term 2 = G (definition). Term 3 = 0 (Voronoi symmetry:
+  face centroid offset cancellation). Term 4 = Vol·I (telescoped boundary integral).
+  Term 1 = 0 verified directly (T2): cubic 0–4e-10, random < 1.2e-06.
 - Same proof for H_ij = Σ_f ⋆₂[f] (A_f)_i(A_f)_j = Vol·δ_ij (dual complex)
-- Numerical verification: cubic (10⁻¹³), random Voronoi (10⁻¹⁰), degenerate (10⁻¹²)
+- **Perpendicularity (pre-condition):** Voronoi dual edge ∥ primal face normal verified
+  to machine precision: |cos(dual, face)| − 1 < 2e-16 (cubic), < 3.4e-14 (random).
+  Uses face_to_cell_shift for correct periodic dual edge vectors.
+- Numerical verification: cubic (10⁻¹⁷), random Voronoi (10⁻¹²), degenerate (10⁻¹²).
+  Stable under domain scaling (L = 2, 4, 8) and extreme cell ratio (40×).
+- **Remark (tight frame):** The weighted edge vectors f_e = √⋆₁[e]·Δx_e form a tight
+  frame for ℝ³ with frame bound A = Vol: F†F = Vol·I, where F is the |E|×3 frame
+  matrix. All 3 singular values of F equal √Vol (redundancy ratio |E|/3 = 64–725).
+  This is the Parseval-type condition: G = Vol·I is equivalent to isotropic quadrature
+  of ℝ³ by weighted edge directions. Connects to frame theory and sampling theory.
 - **Admissible perturbations:** The constraint G = Vol·I is Σ_e δ(⋆₁[e])·(Δx_e)_i(Δx_e)_j = 0,
   which is 6 equations (symmetric 3×3 matrix) on |E| unknowns.
   **Proposition:** The tensors {Δx_e ⊗ Δx_e : e ∈ E} span S²(ℝ³) for any periodic 3D
@@ -43,6 +56,10 @@ Together → c = 1. Errors are separable and quantifiable.
   linearly independent rank-1 tensors spanning S².) Therefore rank = 6,
   giving codimension-6 submanifold in ⋆₁-space ≅ ℝ^|E|. Verified: rank = 6 on all
   structures. Voronoi is one point; |E|−6 directions of freedom preserve c = 1.
+- **Admissible cone radius:** The admissible subspace intersected with ⋆₁ > 0 forms a
+  cone. Voronoi Hodge stars sit deep inside: 1.35× mean(⋆₁) (Kelvin), 5.95× (C15),
+  2.59× (WP). The identity is robust, not marginal — Voronoi is far from the positivity
+  boundary of the admissible set.
 
 ### §3 Theorem: c² = 1
 
@@ -146,8 +163,18 @@ Verified on 3 cubic + 4 random Voronoi (file 6: R44f, R44g):
 
 ### §5 Necessity: removing geometry
 - Exact complex + perturbed Hodge stars → c ≠ 1 but no pollution (n_lost = 0)
-- **Error factorization:** Δc ≈ Δc_geom + Δc_topo, interaction < 0.001 at 10%
-- Geometry controls speed, topology controls mode count. Independent mechanisms.
+- c_EP can be > 1 (WP: 1.006) or < 1 (Kelvin: 0.979) — perturbation doesn't force a direction
+- **Error factorization:** Δc ≈ Δc_geom + Δc_topo. Interaction = O(amplitude):
+  cubic 0.025 at 10%, 0.037 at 15%; random < 0.01 at 10%.
+  Separability is first-order approximate, good to ~15% perturbation amplitude.
+- Random Voronoi interaction tighter than cubic (< 0.01 vs ~0.03) — no symmetry
+  to accidentally force separability, yet it holds better.
+- c_std on random can be subluminal (0.47) or superluminal (1.02) — wildly variable.
+- Topology controls n_lost, geometry primarily controls speed. Approximately additive
+  (not exactly separable — interaction < 5% is empirical, not proved).
+- **Proposition (for paper):** ker(K) = ker(d₁) for any S₂ > 0, since K = d₁†S₂d₁.
+  This is why n_lost is exactly independent of Hodge stars — a mathematical fact, not
+  a numerical observation. Formulate as proposition in §5.
 
 ### §6 Spectral structure of the error
 - **Moment hierarchy:** tr(K^n) conserved for n ≤ 2 on both complexes, any ε.
@@ -216,6 +243,17 @@ tr(K^n) conserved for n=1,2 (rel_diff < 10^{-10}), breaks at n=3 by 0.13–0.22%
 - c = 1 as geometric + topological constraint (not fitted, not emergent)
 - Practical: error budget from separability (metric quality + topological quality)
 - Relation to continuous theory: Voronoi DEC has trivially homogenized metric
+- **Beyond Voronoi (from W2 investigation):** The proof uses 4 conditions:
+  (A) G=H=Vol·I, (B) d₁d₀=0, (C) dim H¹=3, (D) dF/dk=iε. Only (A) is geometric;
+  (B) is topological (works on any complex), (C) is combinatorial (z=4), (D) follows
+  from (A)+topology. For (A), the divergence theorem proof needs perpendicularity
+  (dual edge ⊥ primal face). Power diagrams (Laguerre tessellations) satisfy this
+  exactly — natural candidate generalization. However, Term 3 cancellation (face
+  centroid offsets) is NOT verified for power diagrams. Formulate cautiously:
+  *"The result likely extends to periodic power diagrams, since perpendicularity —
+  the key geometric input to the metric identity proof — holds exactly. Verification
+  of the full identity on power diagrams is left to future work."*
+  Note: no numerical verification possible without power diagram builder (non-trivial).
 
 ## The killer table (§5)
 
@@ -248,16 +286,17 @@ Separability visible at a glance. Each row changes one thing.
 | TRIM collapse | Proved (phases ±1 → products cancel) | Write proof |
 | δc = O(1) | Verified numerically | — |
 
-## Tests backing each section
+## Tests backing each section (new file structure)
 
-| Section | Test files | Key results |
-|---------|-----------|-------------|
-| §2 | file 1: R1-R6, R34; **file 5: N12** | G = H = Vol·I on 8+ meshes; admissible subspace codim-6 |
-| §3 | file 1: R5, R11, R32-R33; file 2: I12; **file 5: R38, R43, N13**; **file 6: R44a-g** | c = 1 spectral, overlap, scalar; random Voronoi c=1.000; H¹=0; Schur complement; discrete curl identity; full proof chain |
-| §4 | file 2: I6, I12; file 3: m1, s7; file 4: s9, s6; **file 5: N16, N19, N13** | Standard fails; no principal symbol; n_lost=Δrank; leaked=gradients |
-| §5 | file 4: M1; **file 5: N15, R39** | Factorization: 3 cubic + 3 random Voronoi |
-| §6 | file 2: I8, moment_hierarchy; file 3: s4, R22; file 4: s3 | Moments + girth |
-| §7 | file 2: I11; file 3: M2 | Dielectric |
+| Section | Test file | Key tests | Key results |
+|---------|-----------|-----------|-------------|
+| §2 | 1_test_metric_identity.py (12 tests) | R1, R2, R3, R4, R34, N12, T2, T4, T5, T7 | G = H = Vol·I (10⁻¹⁷ cubic, 10⁻¹² random); perpendicularity 10⁻¹⁴; codim-6; tight frame; cone radius 1.4–6×; scaling invariance |
+| §3 | 2_test_c_squared_one.py (10 tests) | R5, R38, R32, R41, R44e, R44f, R44g, R6, S1, S2 | c = 1 on all Voronoi; Schur [0, k², k²]; discrete curl dF/dk = iε (1e-8); converse c≠1 (1929×); isotropy 5 dirs (spread 1e-6); dispersion O(k⁴) |
+| §4 | 3_test_removing_exactness.py (7 tests) | R12, R25, R35, R17, R40, R41, R23 | c_std = 1.25–1.68; no principal symbol; anisotropy 37–70%; n_lost = Δrank; leaked ⊂ im(d₀) |
+| §5 | 4_test_removing_geometry.py (3 tests) | R36, R39, R29 | Killer table cubic (interact < 0.03) + random (interact < 0.01); factorization O(amp) at 5/10/15%; c_std random subluminal 0.47–superluminal 1.02 |
+| §6 | 5_test_spectral_structure.py (3 tests) | R14, R22, R21 | tr(K^n) conserved n≤2; girth = valence = 3 |
+| App A | 6_test_appendix_a.py (5 tests) | R44a-d, R11 | Eigvec 99.999% harmonic; Rayleigh paradox; 3-way cancellation |
+| App B | 7_test_appendix_b.py (3 tests) | R16, R20, R27 | Mode mixing 89%+11%; N non-monotonic; TRIM collapse |
 
 ## What to do before writing
 

@@ -1,0 +1,1000 @@
+% ============================================================================
+% "Geometry and topology of discrete Maxwell wave speed"
+% Companion to JCP Paper 1 (JCOMP-D-26-00537)
+% Target: J. Comput. Phys.
+% ============================================================================
+\documentclass[preprint,12pt]{elsarticle}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{bm}
+\usepackage{mathtools}
+\usepackage{booktabs}
+\usepackage{graphicx}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{remark}{Remark}[section]
+
+\DeclareMathOperator{\Vol}{Vol}
+\DeclareMathOperator{\tr}{tr}
+\DeclareMathOperator{\rank}{rank}
+\DeclareMathOperator{\im}{im}
+\DeclareMathOperator{\Span}{span}
+
+\begin{document}
+
+\begin{frontmatter}
+\title{Geometry and topology of discrete Maxwell wave speed}
+\author{Alexandru Toader}
+
+\begin{abstract}
+We prove that on any periodic Voronoi tessellation in three dimensions,
+equipped with an exact discrete cochain complex ($d_1 d_0 = 0$), the
+long-wavelength electromagnetic wave speed is exactly unity in natural
+units. The result $\omega^2 = |k|^2 + O(|k|^4)$ is a geometric identity
+at finite resolution, not a convergence statement. The proof rests on two
+conditions: (A)~the Voronoi metric tensors satisfy
+$G = H = \Vol \cdot I$ (proved via the divergence theorem), and (B)~the
+Bloch-periodic cochain complex preserves exactness (provided by a companion
+paper). These combine through a Schur complement reduction and a discrete
+curl identity to yield the exact leading dispersion. Numerical verification
+spans three ordered foams (Kelvin, Weaire--Phelan, C15) and five random
+Voronoi tessellations. Removing either condition produces $O(1)$ error in
+the wave speed, demonstrating that both geometry and topology are essential.
+\end{abstract}
+
+\begin{keyword}
+discrete exterior calculus \sep Maxwell equations \sep Voronoi tessellation
+\sep wave speed \sep cochain complex
+\end{keyword}
+\end{frontmatter}
+
+
+% ============================================================================
+% §1. INTRODUCTION
+% ============================================================================
+\section{Introduction}
+\label{sec:intro}
+
+Discrete exterior calculus (DEC) provides a coordinate-free framework for
+discretizing differential forms on polyhedral
+complexes~\cite{hirani2003,desbrun2005,arnold2006}. For Maxwell's equations
+on a periodic complex, the discrete curl--curl operator
+$K = d_1^\dagger \star_2 \, d_1$ with mass matrix $M = \star_1$ defines a
+generalized eigenvalue problem
+\begin{equation}
+  K \psi = \omega^2 M \psi
+  \label{eq:eigenvalue}
+\end{equation}
+at Bloch wavevector~$k$. The wave speed~$c$, defined by
+$\lim_{|k|\to 0} \omega^2/|k|^2$, is a fundamental physical quantity that
+should equal unity in natural units.
+
+On structured grids, $c = 1$ follows from lattice symmetry. On unstructured
+polyhedral meshes, the wave speed depends on the Hodge star
+operators~$\star_1$, $\star_2$ (encoding metric information) and on the
+coboundary operator~$d_1$ (encoding topology). Whether an unstructured mesh
+can achieve $c = 1$ without parameter fitting has remained an open question.
+
+In this paper we prove that $c^2 = 1$ on any periodic Voronoi tessellation
+equipped with an exact cochain complex. Two conditions are sufficient:
+\begin{itemize}
+\item[\textbf{(A)}] \textbf{Metric.} The edge and face Gram tensors satisfy
+  $G = H = \Vol \cdot I$, where
+  $G_{ij} = \sum_e \star_1[e]\, (\Delta x_e)_i (\Delta x_e)_j$ and
+  $H_{ij} = \sum_f \star_2[f]\, (A_f)_i (A_f)_j$.
+\item[\textbf{(B)}] \textbf{Topology.} The Bloch-periodic cochain complex
+  preserves exactness: $d_1(k)\, d_0(k) = 0$ for all wavevectors~$k$.
+\end{itemize}
+Condition~(A) is a geometric identity proved via the divergence theorem on
+Voronoi and dual cells (\S\ref{sec:metric}). Condition~(B) is provided by
+the exactness-preserving construction of~\cite{paper1}. Necessity of~(A) is
+proved analytically: $c = 1$ for all directions and polarizations implies
+$G = H = \lambda I$ (\S\ref{sec:converse}). Necessity of~(B) is supported
+numerically: all tested violations of exactness yield $c \neq 1$ with $O(1)$
+error (\S\ref{sec:exactness}).
+
+The theorem states $\omega^2 = |k|^2 + O(|k|^4)$: the long-wavelength wave
+speed is exactly unity at any finite mesh resolution. This is a geometric
+identity, not a convergence statement---no mesh refinement or effective medium
+limit is required. The $O(|k|^4)$ dispersion correction is
+structure-dependent (analogous to $\omega = 2\sin(k/2)$ on a 1D chain), but
+the leading term is universal across all periodic Voronoi tessellations. The
+Voronoi DEC with exact complex is ``already homogenized'': the discrete
+metric tensors are proportional to the identity, the discrete analog of a
+trivially isotropic medium.
+
+This paper is companion to~\cite{paper1}, which constructs the exact cochain
+complex (condition~B) on periodic polyhedral meshes. Here we prove the
+physical consequence: the discrete wave speed equals the continuum value.
+Together, the two papers provide a complete discrete Maxwell theory on
+periodic Voronoi complexes with exact topology and exact long-wavelength
+wave speed.
+
+The paper is organized as follows. Section~\ref{sec:metric} proves the
+metric identities $G = H = \Vol \cdot I$.
+Section~\ref{sec:theorem} states and proves the main theorem $c^2 = 1$ via
+Schur complement reduction and a discrete curl identity, followed by the
+converse in \S\ref{sec:converse}.
+Sections~\ref{sec:exactness} and~\ref{sec:geometry} demonstrate the
+necessity of both conditions by removing each independently.
+Section~\ref{sec:spectral} analyzes the spectral structure of the
+approximation error. Section~\ref{sec:discussion} discusses implications
+and extensions. Appendix~\ref{app:naive_pt} explains why naive perturbation
+theory fails, and Appendix~\ref{app:std_anatomy} provides a detailed anatomy
+of the standard DEC failure mode.
+
+
+% ============================================================================
+% §2. METRIC IDENTITIES
+% ============================================================================
+\section{Metric identities: $G = H = \Vol \cdot I$}
+\label{sec:metric}
+
+Consider a periodic Voronoi tessellation of the 3-torus~$\mathbb{T}^3$ with
+total volume~$\Vol$. The CW complex has vertex set~$V$ (Voronoi vertices,
+where four or more cells meet), edge set~$E$ (Voronoi edges), face set~$F$
+(Voronoi faces), and cell set~$C$ (Voronoi cells, one per seed). Each edge
+$e = (v_1, v_2)$ carries a vector $\Delta x_e = x_{v_2} - x_{v_1}$
+(modulo periodicity) and each face~$f$ carries an oriented area
+vector~$A_f$.
+
+The diagonal Hodge star operators are defined by primal--dual
+perpendicularity:
+\begin{equation}
+  \star_1[e] = \frac{|f^*_e|}{|\Delta x_e|}, \qquad
+  \star_2[f] = \frac{|e^*_f|}{|A_f|},
+  \label{eq:hodge_stars}
+\end{equation}
+where $f^*_e$ is the dual face of edge~$e$ (the polygon of cell centers
+around~$e$, with area~$|f^*_e|$) and $e^*_f$ is the dual edge of face~$f$
+(the segment connecting the two cell centers separated by~$f$, with
+length~$|e^*_f|$).
+
+We define the \emph{edge metric tensor}~$G$ and \emph{face metric tensor}~$H$:
+\begin{equation}
+  G_{ij} = \sum_{e \in E} \star_1[e]\, (\Delta x_e)_i\, (\Delta x_e)_j,
+  \qquad
+  H_{ij} = \sum_{f \in F} \star_2[f]\, (A_f)_i\, (A_f)_j.
+  \label{eq:GH_def}
+\end{equation}
+
+% --- 2.1 Edge tensor G ---
+\subsection{Edge metric: $G = \Vol \cdot I$}
+\label{sec:G_proof}
+
+\begin{theorem}[Edge metric identity]
+\label{thm:G}
+On any periodic Voronoi tessellation of\/ $\mathbb{T}^3$,
+$G = \Vol \cdot I$.
+\end{theorem}
+
+\begin{proof}
+The dual of the Voronoi complex is the Delaunay complex. Each Voronoi
+vertex~$v$ is surrounded by a dual 3-cell~$D_v$ (the convex hull of the
+cell centers adjacent to~$v$). We apply the divergence theorem to the
+vector field $F = x_i\, \hat{e}_j$ on each dual cell:
+\begin{equation}
+  \Vol(D_v)\, \delta_{ij}
+    = \sum_{\substack{e \;\text{at}\; v}} \int_{f^*_e}
+      x_i\, (n_e)_j \, dA,
+  \label{eq:div_thm_G}
+\end{equation}
+where the sum runs over all edges~$e$ emanating from~$v$, and $n_e$ is the
+outward unit normal to the dual face~$f^*_e$.
+
+\emph{Perpendicularity.}
+The dual face~$f^*_e$ is the polygon of cell centers around edge~$e$. Each
+cell center lies on a Voronoi face containing~$e$, and every such face is
+the perpendicular bisector of a segment between two cell centers. Since $e$
+lies in each of these bisector planes, $e$ is perpendicular to every
+segment connecting adjacent cell centers around it. The polygon of cell
+centers therefore lies in a plane orthogonal to~$\Delta x_e$. Its outward
+normal is $n_e = \pm \Delta x_e / |\Delta x_e|$.
+
+\emph{Decomposition.}
+On dual face~$f^*_e$, decompose each point as $x = p_e + \delta$, where
+$p_e = x_v + t_e\, \Delta x_e$ is the point where the dual face plane
+intersects edge~$e$ (at parameter~$t_e$ from vertex~$v$), and
+$\delta \perp \Delta x_e$ satisfies $\int_{f^*_e} \delta\, dA
+= |f^*_e|\, \eta_e$ with $\eta_e$ the in-plane centroid offset.
+Substituting into~\eqref{eq:div_thm_G} yields three terms:
+\begin{align}
+  \text{Term 1:} &\quad
+    (x_v)_i \sum_{e\, \text{at}\, v} \star_1[e]\, (\Delta x_e)_j,
+  \label{eq:term1_G} \\
+  \text{Term 2:} &\quad
+    \sum_{e\, \text{at}\, v} t_e\, \star_1[e]\,
+    (\Delta x_e)_i\, (\Delta x_e)_j,
+  \label{eq:term2_G} \\
+  \text{Term 3:} &\quad
+    \sum_{e\, \text{at}\, v} (\eta_e)_i\, \star_1[e]\, (\Delta x_e)_j,
+  \label{eq:term3_G}
+\end{align}
+using $|f^*_e| = \star_1[e] \cdot |\Delta x_e|$ and
+$n_e = \Delta x_e / |\Delta x_e|$.
+
+\emph{Term~1 vanishes.}
+For a closed dual cell, $\sum_{e\, \text{at}\, v} n_e\, |f^*_e| = 0$
+(flux of a constant through a closed surface), which gives
+$\sum_{e\, \text{at}\, v} \star_1[e]\, (\Delta x_e)_j = 0$.
+
+\emph{Term~2 yields~$G$.}
+Sum~\eqref{eq:div_thm_G} over all vertices~$v$. Each edge $e = (v,w)$
+appears twice: from vertex~$v$ with parameter~$t_e^v$ and outward
+normal~$+\Delta x_e/|\Delta x_e|$, and from vertex~$w$ with
+parameter~$t_e^w = 1 - t_e^v$ and outward normal~$-\Delta x_e/|\Delta x_e|$.
+Since $(\Delta x_e)_i(\Delta x_e)_j$ is invariant under sign reversal, the
+total contribution of edge~$e$ is
+$(t_e^v + t_e^w)\, \star_1[e]\, (\Delta x_e)_i (\Delta x_e)_j
+= \star_1[e]\, (\Delta x_e)_i (\Delta x_e)_j$.
+Thus $\sum_v \text{Term~2} = G_{ij}$.
+
+\emph{Term~3 cancels pairwise.}
+Each dual face~$f^*_e$ is shared by the dual cells at the two endpoints
+of~$e$. The centroid offset~$\eta_e$ is intrinsic to the dual face (it
+depends only on the positions of the cell centers forming the polygon) and
+is the same from both sides. The normals are opposite.
+Periodicity ensures every dual face in the fundamental domain has a partner
+(boundary faces pair with their periodic images). The contributions cancel:
+$\sum_v \text{Term~3} = 0$.
+
+Collecting terms: $\Vol\, \delta_{ij} = G_{ij}$.
+\end{proof}
+
+% --- 2.2 Face tensor H ---
+\subsection{Face metric: $H = \Vol \cdot I$}
+\label{sec:H_proof}
+
+\begin{theorem}[Face metric identity]
+\label{thm:H}
+On any periodic Voronoi tessellation of\/ $\mathbb{T}^3$,
+$H = \Vol \cdot I$.
+\end{theorem}
+
+\begin{proof}
+Apply the divergence theorem to $F = x_i\, \hat{e}_j$ on each Voronoi
+cell~$C$:
+\begin{equation}
+  \Vol(C)\, \delta_{ij}
+    = \sum_{f \in \partial C} \int_f x_i\, (n_f)_j\, dA.
+  \label{eq:div_thm_H}
+\end{equation}
+
+\emph{Perpendicularity.}
+Each Voronoi face~$f$ is the perpendicular bisector of the dual edge~$e^*_f$
+connecting the two cell centers it separates. The outward face normal
+satisfies $n_f \parallel e^*_f$, i.e.\ $n_f = \pm A_f / |A_f|$.
+
+\emph{Decomposition.}
+Since face~$f$ is the perpendicular bisector of~$e^*_f$, the midpoint
+$m_f = (p_C + p_{C'})/2$ of the dual edge lies on the face, at distance
+$|\Delta p_f|/2$ from~$p_C$ along~$n_f$, where $\Delta p_f = p_{C'} - p_C$.
+Decompose each point on face~$f$ as $x = p_C + (m_f - p_C) + \delta$,
+where $\delta \perp n_f$ satisfies
+$\int_f \delta\, dA = |A_f|\, \eta_f$ with $\eta_f$ the in-plane
+centroid offset. As in the $G$~proof, three terms arise:
+\begin{align}
+  \text{Term 1:} &\quad
+    (p_C)_i \sum_{f \in \partial C} (n_f)_j\, |A_f| = 0
+    \quad\text{(closed cell)},
+  \label{eq:term1_H} \\
+  \text{Term 2:} &\quad
+    \tfrac{1}{2} \sum_{f \in \partial C}
+    \star_2[f]\, (A_f)_i\, (A_f)_j,
+  \label{eq:term2_H} \\
+  \text{Term 3:} &\quad
+    \sum_{f \in \partial C} (\eta_f)_i\, (n_f)_j\, |A_f|.
+  \label{eq:term3_H}
+\end{align}
+In Term~2 we used $(m_f - p_C)_i = (\Delta p_f)_i / 2$ and
+$(n_f)_j\, |A_f| = \pm (A_f)_j$ with
+$(\Delta p_f)_i (A_f)_j / |\Delta p_f|
+= \star_2[f] \cdot (A_f)_i (A_f)_j / |A_f|$
+since $\Delta p_f \parallel A_f$.
+
+Summing over all cells: each face is shared by two cells contributing
+$\tfrac{1}{2}$ each, so $\sum_C \text{Term~2} = H_{ij}$.
+The centroid offset~$\eta_f$ is face-intrinsic (identical from both cells);
+opposite normals cancel Term~3 pairwise.
+Therefore $\Vol\, \delta_{ij} = H_{ij}$.
+\end{proof}
+
+\begin{remark}
+The two proofs are structurally identical: apply the divergence theorem
+on dual 3-cells for~$G$ and on primal 3-cells for~$H$. In each case,
+Voronoi perpendicularity aligns the outward normal with the relevant
+direction vector ($\Delta x_e$ or $A_f$), the closed-surface condition
+kills Term~1, and pairwise cancellation eliminates Term~3.
+\end{remark}
+
+% --- 2.3 Admissible perturbations ---
+\subsection{Admissible perturbations}
+\label{sec:admissible}
+
+The constraint $G = \Vol \cdot I$ imposes 6 scalar conditions (the
+independent components of a $3 \times 3$ symmetric tensor) on the $|E|$
+Hodge star values $\star_1[e]$. On all tested structures, the constraint
+matrix $(\Delta x_e)_i (\Delta x_e)_j$ has rank~6, so the admissible set
+\begin{equation}
+  \mathcal{A} = \{ \star_1 \in \mathbb{R}^{|E|}_{>0} :
+    G(\star_1) = \Vol \cdot I \}
+\end{equation}
+is a smooth manifold of dimension $|E| - 6$, intersected with the positive
+orthant.
+
+\begin{proposition}
+\label{prop:rank6}
+If every vertex has degree $\geq 4$ and the edge directions at each vertex
+span~$\mathbb{R}^3$, then
+$\rank\{(\Delta x_e) \otimes (\Delta x_e) : e \in E\} = 6$,
+so $\dim \mathcal{A} = |E| - 6$.
+\end{proposition}
+
+The Voronoi Hodge star is one point in~$\mathcal{A}$; the remaining
+$|E|-6$ degrees of freedom parameterize perturbations of~$\star_1$ that
+preserve $c = 1$. Numerically, the admissible cone
+radius ranges from $1.4$ to $6 \times \overline{\star_1}$ across tested
+structures, indicating a substantial basin around the Voronoi point.
+
+% --- 2.4 Numerical verification ---
+\subsection{Numerical verification}
+\label{sec:metric_numerics}
+
+Table~\ref{tab:metric} summarizes the metric identity on all tested
+structures. The identity $G = H = \Vol \cdot I$ holds to machine precision
+on ordered foams and to $O(10^{-10})$ on random Voronoi tessellations (the
+residual reflects Qhull vertex-placement tolerance).
+
+\begin{table}[ht]
+\centering
+\caption{Metric identity verification. $\epsilon_G = \|G/\Vol - I\|_\infty$,
+$\epsilon_H = \|H/\Vol - I\|_\infty$.}
+\label{tab:metric}
+\begin{tabular}{lrrcc}
+\toprule
+Structure & $|V|$ & $|E|$ & $\epsilon_G$ & $\epsilon_H$ \\
+\midrule
+Kelvin ($N\!=\!2$) & 96 & 192 & $10^{-16}$ & $10^{-16}$ \\
+C15 ($N\!=\!2$) & 432 & 864 & $10^{-15}$ & $10^{-16}$ \\
+Weaire--Phelan ($N\!=\!2$) & 368 & 736 & $10^{-16}$ & $10^{-16}$ \\
+Random ($n\!=\!80$, 5~seeds) & 540--570 & 1080--1140
+  & $10^{-12}$ & $10^{-12}$ \\
+Degenerate (ratio 40$\times$) & --- & --- & $10^{-12}$ & $10^{-12}$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Additional verifications:
+the trace identity $\tr G = \tr H = 3\Vol$ holds on all structures;
+perpendicularity $\hat{e}^* \parallel \hat{n}_f$ is verified to machine precision
+(dual edge direction parallel to face normal);
+and domain scaling $G \to s^3 I$ under $V \to sV$, $L \to sL$ confirms
+dimensional correctness.
+
+% --- 2.5 Tight frame remark ---
+\subsection{Tight frame interpretation}
+\label{sec:tight_frame}
+
+\begin{remark}
+The weighted edge vectors $f_e = \sqrt{\star_1[e]}\, \Delta x_e$ form a
+tight frame for~$\mathbb{R}^3$ with frame bound $A = \Vol$:
+\begin{equation}
+  F^\dagger F = \Vol \cdot I, \qquad
+  \sigma_1 = \sigma_2 = \sigma_3 = \sqrt{\Vol},
+\end{equation}
+where $F$ is the $|E| \times 3$ matrix with rows $f_e^\top$.
+The identity $G = \Vol \cdot I$ is equivalent to Parseval-type isotropic
+quadrature: the Hodge star--weighted edge directions sample all of
+$\mathbb{R}^3$ uniformly.
+\end{remark}
+
+
+% ============================================================================
+% §3. THEOREM: c² = 1
+% ============================================================================
+\section{Acoustic wave speed}
+\label{sec:theorem}
+
+% --- 3.1 Setup and statement ---
+\subsection{Setup and statement}
+\label{sec:setup}
+
+The discrete Maxwell operator at Bloch wavevector~$k$ is
+$K(k) = d_1(k)^\dagger \star_2\, d_1(k)$ acting on 1-forms, with mass
+matrix $M = \star_1$. The generalized eigenvalue problem~\eqref{eq:eigenvalue}
+determines the discrete dispersion relation $\omega^2(k)$.
+
+At $k = 0$ (the $\Gamma$~point), the first cohomology
+$H^1(\mathbb{T}^3) \cong \mathbb{R}^3$ is spanned by harmonic 1-forms
+\begin{equation}
+  h_\alpha = \frac{(\Delta x_e)_\alpha}{\sqrt{\Vol}}, \quad \alpha = 1,2,3,
+  \label{eq:harm}
+\end{equation}
+which are $M$-orthonormal:
+$h_\alpha^\dagger M\, h_\beta
+  = G_{\alpha\beta}/\Vol = \delta_{\alpha\beta}$
+(using $G = \Vol \cdot I$ from Theorem~\ref{thm:G}).
+At $k \neq 0$, the cohomology $H^1(k)$ vanishes---verified numerically on
+all tested structures. (Dimension count: with exactness,
+$\dim\ker(d_1) = |V|$ and $\dim\im(d_0) = |V|$ at generic~$k$, so
+$H^1 = \ker d_1 / \im d_0 = 0$.)
+The three zero modes at~$\Gamma$ deform into one gradient mode and two
+acoustic modes.
+
+The second cohomology $H^2(\mathbb{T}^3) \cong \mathbb{R}^3$ at~$\Gamma$
+is spanned by
+\begin{equation}
+  (h_2)_\beta = \frac{(A_f)_\beta}{\sqrt{\Vol}}, \quad \beta = 1,2,3,
+  \label{eq:h2}
+\end{equation}
+which are $\star_2$-orthonormal:
+$(h_2)_\beta^\dagger \star_2\, (h_2)_{\beta'}
+  = H_{\beta\beta'}/\Vol = \delta_{\beta\beta'}$
+(using $H = \Vol \cdot I$ from Theorem~\ref{thm:H}).
+
+\begin{theorem}[Wave speed identity]
+\label{thm:c_squared}
+On any periodic Voronoi tessellation of\/ $\mathbb{T}^3$ with exact
+cochain complex ($d_1(k)\, d_0(k) = 0$ for all~$k$),
+\begin{equation}
+  \omega^2 = |k|^2 + O(|k|^4),
+  \label{eq:c_squared}
+\end{equation}
+giving $c^2 = \lim_{|k|\to 0} \omega^2/|k|^2 = 1$.
+\end{theorem}
+
+% --- 3.2 Proof ---
+\subsection{Proof of Theorem~\ref{thm:c_squared}}
+\label{sec:proof}
+
+The proof uses four ingredients:
+\begin{enumerate}
+\item $H = \Vol \cdot I$, so $(h_2)^\dagger \star_2\, (h_2) = I_3$
+  \hfill (Theorem~\ref{thm:H})
+\item $d_1(0)\, h_\alpha = 0$: the curl of a constant form vanishes.
+\item Cochain exactness at all~$k$:
+  \begin{itemize}
+  \item $d_1(k)\, d_0(k) = 0$ (from~\cite{paper1}; the non-trivial condition),
+  \item $d_2(k)\, d_1(k) = 0$ (a topological identity, $\partial^2 = 0$ on
+    any oriented cell complex; automatic).
+  \end{itemize}
+\item Discrete curl identity (Lemma~\ref{lem:curl} below).
+\end{enumerate}
+
+\emph{Step 1: image of harmonics.}
+Define the $|F| \times 3$ matrix $u = d_1(k)\, h$, where $h$ is the
+$|E| \times 3$ matrix of harmonic 1-forms~\eqref{eq:harm}. Since
+$d_1(0)\, h = 0$ (ingredient~2), we have
+$u = [d_1(k) - d_1(0)]\, h = O(k)$.
+
+\emph{Step 2: orthogonal decomposition in face space.}
+Let $W = \im(d_1(0)) \subset \mathbb{C}^{|F|}$ and decompose
+\begin{equation}
+  u = u_{\mathrm{im}} + u_\perp,
+  \label{eq:u_decomp}
+\end{equation}
+$\star_2$-orthogonally, with $u_{\mathrm{im}} \in W$ and
+$u_\perp \in W^\perp$.
+
+The dimension of $W^\perp$ is $|F| - \rank d_1(0)$. By the Euler
+relation $|V| - |E| + |F| - |C| = 0$ and
+$\rank d_1(0) = |E| - |V| - 2$ (since $\dim\ker d_1(0) = |V| + 2$,
+accounting for $H^1$ of dimension~3 and $\im d_0$ of dimension~$|V|-1$):
+\begin{equation}
+  \dim W^\perp = |F| - |E| + |V| + 2 = |C| + 2.
+  \label{eq:complement_dim}
+\end{equation}
+By the Hodge decomposition $\Omega^2 = \im(d_1) \oplus H^2 \oplus \im(d_2^\dagger)$,
+this splits as $H^2$ (dimension~3) and $\im(d_2^\dagger)$ (dimension~$|C|-1$).
+
+\emph{Step 3: only $H^2$ at leading order.}
+Since $d_2(k)\, d_1(k) = 0$ (ingredient~3), the image
+$u = d_1(k)\, h$ lies in $\ker(d_2(k))$ at every~$k$. At $k = 0$,
+$\ker(d_2(0)) = \im(d_1(0)) \oplus H^2$ (Hodge decomposition). Since
+$u_{\mathrm{im}}$ has already been separated, the remaining $u_\perp$ lies
+in $\ker(d_2(0))$ at leading order: the $\im(d_2^\dagger)$ components
+enter only at $O(k^2)$, contributing $O(k^4)$ to~$\omega^2$.
+Therefore
+\begin{equation}
+  (u_\perp)_\alpha = \sum_\beta C_{\beta\alpha}\, (h_2)_\beta + O(k^2),
+  \label{eq:u_perp_H2}
+\end{equation}
+where $C_{\beta\alpha} = (h_2)_\beta^\dagger \star_2\, (u_\perp)_\alpha$.
+
+\emph{Step 4: Schur complement reduction.}
+
+\begin{lemma}[Schur complement]
+\label{lem:schur}
+The Schur complement of~$K(k)$ restricted to the harmonic subspace equals
+$u_\perp^\dagger \star_2\, u_\perp$ at leading order.
+\end{lemma}
+
+\begin{proof}
+In the basis $\{h, \text{optical}, \text{gauge}\}$, the $3 \times 3$
+harmonic block is
+$\mathcal{H}_3 = h^\dagger K(k)\, h = u^\dagger \star_2\, u$.
+
+\emph{Gauge decoupling} (key use of $d_1 d_0 = 0$):
+for any gauge mode $g = d_0(k)\, \varphi$,
+$K(k)\, g = d_1(k)^\dagger \star_2\, d_1(k)\, d_0(k)\, \varphi = 0$.
+Gauge modes lie in $\ker K(k)$ at all~$k$ and decouple from the harmonic
+sector entirely. The Schur complement involves only optical modes.
+
+The Schur complement is
+$S = \mathcal{H}_3 - B\, D^{-1} B^\dagger$,
+where $B$ couples harmonics to optical modes and $D$ is the optical block.
+At~$\Gamma$, $D > 0$ with gap $\sim 0.54$--$0.60$; by continuity,
+$D(k) = D(0) + O(k)$ remains invertible at small~$k$.
+The optical modes at~$\Gamma$ span $\im(d_1(0)^\dagger)$ in edge space;
+their images under~$d_1(0)$ span $W = \im(d_1(0))$ in face space.
+By $\star_2$-orthogonality of~\eqref{eq:u_decomp}:
+\[
+  \mathcal{H}_3 = u_{\mathrm{im}}^\dagger \star_2\, u_{\mathrm{im}}
+  + u_\perp^\dagger \star_2\, u_\perp.
+\]
+The term $B\, D^{-1} B^\dagger$ projects~$u$ onto~$W$, yielding
+$u_{\mathrm{im}}^\dagger \star_2\, u_{\mathrm{im}}$.
+Therefore $S = u_\perp^\dagger \star_2\, u_\perp$.
+\end{proof}
+
+\emph{Step 5: discrete curl identity.}
+
+\begin{lemma}[Discrete curl]
+\label{lem:curl}
+$\displaystyle
+  \frac{\partial}{\partial k_\gamma}
+  \bigl[ (h_2)_\beta^\dagger \star_2\, d_1(k)\, h_\alpha \bigr]_{k=0}
+  = i\, \varepsilon_{\beta\gamma\alpha}.
+$
+\end{lemma}
+
+\begin{proof}
+The Bloch coboundary operator satisfies
+$d_1(k)[f,e] = d_1(0)[f,e] \cdot e^{i k \cdot n_e L}$,
+where $n_e \in \mathbb{Z}^3$ is the lattice shift for edge~$e$.
+Since $d_1(0)\, h = 0$ (ingredient~2), the $k$-derivative at $k = 0$ is
+\begin{equation}
+  \frac{\partial}{\partial k_\gamma} [d_1(k)\, h_\alpha]_f \bigg|_0
+  = \frac{i}{\sqrt{\Vol}} \sum_{e \in \partial f}
+    d_1(0)[f,e] \cdot (n_e L)_\gamma \cdot (\Delta x_e)_\alpha.
+  \label{eq:curl_deriv}
+\end{equation}
+The sum $\sum_{e \in \partial f} d_1[f,e] \cdot (n_e L)_\gamma (\Delta x_e)_\alpha$
+is a discrete Stokes integral: each term
+$(n_e L)_\gamma\, (\Delta x_e)_\alpha$ is the $\gamma\alpha$-component of
+the parallelogram spanned by $n_e L$ and $\Delta x_e$. Summing around the
+boundary of face~$f$ (Stokes' theorem:
+$\oint_{\partial f} x_\gamma\, dx_\alpha
+= \int_f (\partial_\alpha x_\gamma - \partial_\gamma x_\alpha)\, dA
+= \varepsilon_{\beta'\gamma\alpha} (A_f)_{\beta'}$)
+gives
+\begin{equation}
+  \sum_{e \in \partial f} d_1[f,e] \cdot (n_e L)_\gamma (\Delta x_e)_\alpha
+  = \varepsilon_{\beta'\gamma\alpha}\, (A_f)_{\beta'}.
+  \label{eq:stokes_face}
+\end{equation}
+Contracting with $(h_2)_\beta^\dagger \star_2
+= (A_f)_\beta \star_2[f] / \sqrt{\Vol}$:
+\begin{align}
+  \frac{\partial F_{\beta\alpha}}{\partial k_\gamma}\bigg|_0
+  &= \frac{i}{\Vol} \sum_f \star_2[f]\,
+    (A_f)_\beta\, \varepsilon_{\beta'\gamma\alpha}\, (A_f)_{\beta'}
+  \nonumber\\
+  &= \frac{i}{\Vol}\, \varepsilon_{\beta'\gamma\alpha}\, H_{\beta\beta'}
+  = i\, \varepsilon_{\beta\gamma\alpha},
+  \label{eq:curl_result}
+\end{align}
+where the last step uses $H = \Vol \cdot I$ (ingredient~1).
+\end{proof}
+
+\emph{Completion of proof.}
+By Lemma~\ref{lem:curl}, $C_{\beta\alpha} = i\, \varepsilon_{\beta\gamma\alpha}\, k_\gamma + O(k^2)$.
+From~\eqref{eq:u_perp_H2} and ingredient~1:
+\begin{equation}
+  S = C^\dagger (h_2^\dagger \star_2\, h_2)\, C + O(k^4)
+    = C^\dagger C + O(k^4)
+    = [k\times]^\top [k\times] + O(k^4)
+    = k^2\, P_T + O(k^4),
+  \label{eq:S_final}
+\end{equation}
+where $P_T = I - \hat{k} \otimes \hat{k}$ is the transverse projector.
+The $3 \times 3$ mass matrix in the harmonic sector is $G/\Vol = I$.
+The eigenvalues of $S\, v = \omega^2 v$ are
+$\{0,\, k^2,\, k^2\} + O(k^4)$: one longitudinal (becoming a gradient) and
+two transverse acoustic modes with $c^2 = 1$. \qed
+
+\emph{Dispersion.}
+The $O(k^4)$ correction gives a structure-dependent $O(k^2)$ shift in~$c^2$:
+$\delta c^2 / k^2 \approx -0.104$ (Kelvin), $-0.022$ (C15), $-0.054$ (WP).
+This is a standard lattice dispersion artifact, analogous to
+$\omega = 2\sin(k/2)$ on a 1D chain.
+
+% --- 3.3 Converse ---
+\subsection{Converse: $c = 1$ implies metric isotropy}
+\label{sec:converse}
+
+\begin{lemma}[Converse, under exactness]
+\label{lem:converse}
+On an exact complex ($d_1 d_0 = 0$, $d_2 d_1 = 0$), if
+$\lim_{|k|\to 0} \omega^2/|k|^2 = 1$ for all directions~$\hat{k}$ and all
+transverse polarizations $\alpha \perp \hat{k}$, then
+$G = H = \lambda\, I$ for some $\lambda > 0$.
+\end{lemma}
+
+\begin{proof}
+Under exactness, the Schur complement derivation (\S\ref{sec:proof}) holds
+for general positive-definite~$G$ and~$H$. The projection of~$u$ onto $H^2$
+via $P = h_2\, (H/\Vol)^{-1}\, h_2^\dagger \star_2$ introduces~$H^{-1}$;
+this cancels with~$H$ from the Gram matrix
+$h_2^\dagger \star_2\, h_2 = H/\Vol$, giving
+$u_\perp = -i\, \varepsilon_{\beta\gamma\alpha}\, k_\gamma\, (h_2)_\beta$
+(independent of~$H$).
+The Schur complement becomes $S = (k\times)^\top (H/\Vol)\, (k\times)$,
+and the mass matrix is~$G/\Vol$.
+The eigenvalue equation at leading order reads
+\begin{equation}
+  (k \times \alpha)^\top H\, (k \times \alpha)
+  = \omega^2\, \alpha^\top G\, \alpha
+  \label{eq:converse_eig}
+\end{equation}
+for transverse~$\alpha \perp k$. Setting $\omega^2 / k^2 = 1$ and choosing
+specific $(k, \alpha)$ pairs extracts all tensor components:
+\begin{alignat}{3}
+  k &= e_3,\; \alpha = e_1 &\quad&\Longrightarrow\quad& H_{22} &= G_{11},
+  \nonumber \\
+  k &= e_3,\; \alpha = e_2 &&\Longrightarrow& H_{11} &= G_{22},
+  \nonumber \\
+  k &= e_1,\; \alpha = e_2 &&\Longrightarrow& H_{33} &= G_{22},
+  \nonumber \\
+  k &= e_1,\; \alpha = e_3 &&\Longrightarrow& H_{22} &= G_{33},
+  \label{eq:diag_extraction}
+\end{alignat}
+giving $G_{11} = G_{22} = G_{33} \equiv \lambda$ and
+$H_{11} = H_{22} = H_{33} = \lambda$.
+
+For off-diagonals, use $k = (e_1 + e_2)/\sqrt{2}$, $\alpha = e_3$:
+$(k\times\alpha)^\top H\, (k\times\alpha) = \lambda - H_{12}$
+and $k^2 \alpha^\top G\, \alpha = \lambda$, giving $H_{12} = 0$.
+Similarly, $k = e_3$, $\alpha = (e_1 + e_2)/\sqrt{2}$ gives $G_{12} = 0$.
+The remaining off-diagonals vanish by analogous choices.
+Therefore $G = H = \lambda\, I$.
+\end{proof}
+
+\begin{remark}
+On Voronoi tessellations, $\lambda = \Vol$ (from~\S\ref{sec:metric}), but
+$c = 1$ alone fixes only the ratio $H/G = I$, not the absolute scale.
+For condition~(B), we have numerical evidence only: all tested violations
+of exactness yield $c \neq 1$, but no analytic proof that leaked gauge
+modes always contaminate the lowest acoustic eigenvalue.
+\end{remark}
+
+
+% ============================================================================
+% §4. NECESSITY: REMOVING EXACTNESS
+% ============================================================================
+\section{Removing exactness: $d_1 d_0 \neq 0$}
+\label{sec:exactness}
+
+Standard DEC uses the same Voronoi Hodge stars ($G = H = \Vol \cdot I$)
+but constructs~$d_1(k)$ via simple Bloch phasing rather than the
+exactness-preserving recurrence of~\cite{paper1}. This breaks
+$d_1(k)\, d_0(k) = 0$ at $k \neq 0$.
+
+\emph{Speed error.}
+On the three ordered foams, the standard wave speed is
+$c_{\mathrm{std}} = 1.25$ (Kelvin), $1.68$ (C15), $1.48$ (WP)---$O(1)$
+errors. On random Voronoi tessellations, $c_{\mathrm{std}}$ ranges from
+$0.61$ to $1.04$: the error can be subluminal or superluminal, with no
+systematic sign.
+
+\emph{No principal symbol.}
+The direction-dependent speed $c^2(\hat{k})$ cannot be fit by
+$\hat{k}^\top \mathcal{C}\, \hat{k}$ for any symmetric tensor~$\mathcal{C}$:
+the RMS residual is $0.38$--$0.74$ on cubic structures. The error does
+not decompose into an effective anisotropic medium.
+
+\emph{Severe anisotropy.}
+The anisotropy $(c_{\max} - c_{\min})/c_{\mathrm{mean}}$ is $37$--$70\%$
+on cubic structures (compared to $< 10^{-4}$ with the exact complex).
+
+\emph{Mechanism.}
+Since $H^1(k \neq 0) = 0$, the exact kernel satisfies
+$\ker(d_{1,\mathrm{ex}}) = \im(d_0)$. Breaking $d_1 d_0 = 0$ causes
+gradient modes to leak out of $\ker(d_1)$, acquiring spurious
+$\omega^2 > 0$. The number of leaked modes is
+$n_{\mathrm{lost}} = \rank(d_{1,\mathrm{ex}}) - \rank(d_{1,\mathrm{std}})
+= \Delta\rank(d_1)$,
+an exact identity verified on all $3 \times 3$ structure--direction
+combinations. The leaked forms are pure gradients (overlap with
+$\im(d_0) \geq 88.5\%$). The count $n_{\mathrm{lost}}$ depends on
+$k$-direction: axis-aligned~$< $ face diagonal~$<$ body diagonal, reflecting
+the number of periodic wrapping modes affected.
+
+The standard DEC error is $O(1)$, not $O(k^2)$: the speed error persists
+as $k \to 0$ and does not vanish with refinement. This is a structural
+failure, not a discretization artifact.
+
+Detailed anatomy of the standard failure (mode mixing, $N$-dependence,
+TRIM collapse) is given in Appendix~\ref{app:std_anatomy}.
+
+
+% ============================================================================
+% §5. NECESSITY: REMOVING GEOMETRY
+% ============================================================================
+\section{Removing geometry: perturbed Hodge stars}
+\label{sec:geometry}
+
+To isolate the role of the metric, we keep the exact complex
+($d_1 d_0 = 0$) but replace the Voronoi Hodge star~$\star_1$ with a
+random perturbation: $\star_1'[e] = \star_1[e]\,(1 + \epsilon\, \xi_e)$,
+$\xi_e \sim \mathcal{N}(0,1)$, at amplitude $\epsilon = 0.10$.
+This breaks $G = \Vol \cdot I$ while preserving topology.
+
+\begin{proposition}
+\label{prop:gauge_indep}
+$\ker K(k) = \ker d_1(k)$ for any $\star_2 > 0$.
+\end{proposition}
+
+\begin{proof}
+$K = d_1^\dagger \star_2\, d_1$ and $\star_2$ is positive definite, so
+$\psi \in \ker K \iff d_1\, \psi = 0$.
+\end{proof}
+
+\noindent
+Therefore $n_{\mathrm{lost}}$ depends only on topology, not on Hodge
+stars---a mathematical fact, not a numerical observation.
+
+\emph{Error factorization.}
+The $2 \times 2$ table (Table~\ref{tab:killer}) separates the two
+conditions. On each structure, the wave speed error decomposes approximately
+as $\Delta c \approx \Delta c_{\mathrm{geom}} + \Delta c_{\mathrm{topo}}$:
+the interaction term is $< 0.05$ on cubic and $< 0.10$ on random structures
+at $\epsilon = 0.10$.
+
+\begin{table}[ht]
+\centering
+\caption{Condition separation on Kelvin ($N\!=\!2$). Perturbed $\star_1$
+at 10\%. Full paper includes all 3 cubic + 3 random structures.}
+\label{tab:killer}
+\begin{tabular}{ccccc}
+\toprule
+$d_1 d_0 = 0$ & $G = \Vol \cdot I$ & $c$ & $n_{\mathrm{lost}}$ &
+Anisotropy \\
+\midrule
+\checkmark & \checkmark & 1.000 & 0 & $< 10^{-4}$ \\
+\checkmark & $\times$ & 0.979 & 0 & $\sim 1\%$ \\
+$\times$ & \checkmark & 1.253 & 6 & 70\% \\
+$\times$ & $\times$ & 1.257 & 6 & 71\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The perturbed speed $c_{\mathrm{EP}}$ can be above unity (WP: 1.006) or
+below (Kelvin: 0.979); the perturbation direction is not systematic.
+Topology controls gauge pollution ($n_{\mathrm{lost}}$); geometry
+controls speed accuracy.
+
+
+% ============================================================================
+% §6. SPECTRAL STRUCTURE OF THE ERROR
+% ============================================================================
+\section{Spectral structure: moment conservation and girth}
+\label{sec:spectral}
+
+Although the exact and standard operators $K_{\mathrm{ex}}$ and
+$K_{\mathrm{std}}$ have different spectra, their low-order spectral moments
+agree.
+
+\begin{theorem}[Moment conservation]
+\label{thm:moments}
+$\tr(K_{\mathrm{ex}}^n) = \tr(K_{\mathrm{std}}^n)$ for all
+$n < \mathrm{girth}(G_{\mathrm{face}})$, where $G_{\mathrm{face}}$ is the
+face adjacency graph (faces connected when they share an edge).
+\end{theorem}
+
+\begin{proof}
+The trace $\tr(K^n) = \tr((d_1^\dagger \star_2\, d_1)^n)$ counts walks of
+length~$2n$ on the bipartite incidence graph
+$B = (E \cup F,\, \sim)$, where $e \sim f$ iff $e \in \partial f$.
+The girth of~$B$ is $\mathrm{girth}(B) = 2 \cdot \mathrm{girth}(G_{\mathrm{face}})$.
+For $2n < \mathrm{girth}(B)$, every closed walk of length~$2n$ is a tree.
+On a tree, each edge of~$B$ is traversed once forward and once backward
+(opposite orientation); the Bloch phase factors cancel pairwise.
+The contribution of each walk therefore equals $|d_1[f,e]|^{2n} = 1$
+regardless of phases, so $\tr(K_{\mathrm{ex}}^n) = \tr(K_{\mathrm{std}}^n)$.
+
+At $n = \mathrm{girth}(G_{\mathrm{face}})$, a simple cycle exists in
+$G_{\mathrm{face}}$, producing a non-backtracking walk in~$B$. The
+holonomy---the product of Bloch phases around the cycle---differs between
+exact and standard~$d_1$, breaking the conservation.
+\end{proof}
+
+On all tested 3D Voronoi tessellations, $\mathrm{girth}(G_{\mathrm{face}}) = 3$
+and the edge valence is uniformly~3. Conservation holds for $n = 1, 2$
+(to $< 10^{-10}$) and breaks at $n = 3$ by $0.13$--$0.22\%$.
+The spectral difference between exact and standard DEC is a
+\emph{redistribution} of eigenvalue weight, not a creation: the total
+$\tr K$ and variance $\tr K^2$ are identical.
+
+
+% ============================================================================
+% §7. DISCUSSION
+% ============================================================================
+\section{Discussion}
+\label{sec:discussion}
+
+The discrete electromagnetic wave speed on a periodic Voronoi complex with
+exact cochain complex is exactly unity in natural units. This is not a
+fitted parameter, not an emergent property of dynamics, and not an
+approximation that improves with refinement: it is a geometric identity at
+any finite resolution.
+
+\emph{Already homogenized.}
+The metric identities $G = H = \Vol \cdot I$ are the discrete analog of a
+trivially isotropic medium. No effective medium theory or homogenization
+limit is needed: the Voronoi DEC with exact complex gives $c = 1$ on any
+mesh, coarse or fine.
+
+\emph{Practical error budget.}
+The separability demonstrated in \S\ref{sec:geometry}
+(Table~\ref{tab:killer}) provides a practical error decomposition:
+$\Delta c \approx \Delta c_{\mathrm{geom}} + \Delta c_{\mathrm{topo}}$.
+The metric quality $\|G/\Vol - I\|$ and the topological quality
+$\|d_1 d_0\|$ can be measured independently, enabling targeted mesh
+improvement.
+
+\emph{Dimension independence.}
+The divergence theorem argument of \S\ref{sec:metric} extends to any
+dimension~$d$: on a periodic Voronoi tessellation of~$\mathbb{T}^d$,
+$G = \Vol_d \cdot I_d$. Full investigation is left to future work.
+
+\emph{Beyond Voronoi.}
+The proof uses four properties: (A)~$G = H = \Vol \cdot I$,
+(B)~$d_1 d_0 = 0$ and $d_2 d_1 = 0$, (C)~$\dim H^1(\mathbb{T}^3) = 3$
+(Betti number $\beta_1 = 3$, always true on the 3-torus), and
+(D)~$\partial F / \partial k|_0 = i\varepsilon$ (discrete curl identity).
+Property~(D) follows from~(A). For~(A), the $G$~proof requires dual face
+normals parallel to primal edges (Voronoi perpendicularity); the $H$~proof
+requires primal face normals parallel to dual edges (dual perpendicularity).
+Power diagrams (Laguerre tessellations) satisfy both perpendicularity
+conditions and likely support the same identities.
+
+\emph{Dielectric extension.}
+The metric identity extends to piecewise constant permittivity~$\varepsilon$
+using the harmonic mean prescription
+$\varepsilon_{\mathrm{eff}} = 2/(1/\varepsilon_1 + 1/\varepsilon_2)$ at
+each face, giving $c^2 = \langle 1/\varepsilon \rangle_{\mathrm{vol}}$.
+Details will appear in a forthcoming paper.
+
+\emph{Relation to Paper~1.}
+Paper~1~\cite{paper1} constructs the exact cochain complex (condition~B);
+the present paper proves the physical consequence (condition~A +
+Theorem~\ref{thm:c_squared}). Together, they provide a complete discrete
+Maxwell theory on periodic Voronoi complexes: exact topology and exact
+long-wavelength wave speed.
+
+
+% ============================================================================
+% APPENDICES
+% ============================================================================
+\appendix
+
+% ============================================================================
+% APPENDIX A. WHY NAIVE PERTURBATION THEORY FAILS
+% ============================================================================
+\section{Why naive perturbation theory fails}
+\label{app:naive_pt}
+
+The acoustic modes at~$\Gamma$ lie in a $(|V|+2)$-fold degenerate zero
+eigenspace, so standard degenerate perturbation theory on the full null
+space gives $c^2 \sim 25$---wildly wrong. The Rayleigh quotient on
+individual harmonic forms gives $R[h_\alpha]/k^2 = 4.8$--$10.7$, yet the
+true eigenvector is $99.999\%$ harmonic (overlap with the $\Gamma$-harmonic
+subspace).
+
+The paradox resolves through three-way cancellation. Decompose the
+eigenvector as $\psi = h + \delta\psi$ (harmonic + correction). Then
+\begin{equation}
+  \omega^2 = h^\dagger K h + 2\,\mathrm{Re}(h^\dagger K\, \delta\psi)
+  + \delta\psi^\dagger K\, \delta\psi = k^2.
+  \label{eq:cancellation}
+\end{equation}
+The first term is $O(k^2)$ but $\gg k^2$; the cross term is large and
+negative; the third term is positive. The three terms conspire to give
+$k^2$ exactly.
+
+Gradient projection (replacing $h$ with its component orthogonal to
+$\im(d_0)$) makes the Rayleigh quotient \emph{worse}, not better: the
+gradient component of~$h$ partially cancels the large first term.
+
+The Schur complement (\S\ref{sec:proof}) avoids these difficulties by
+block-eliminating the optical modes algebraically rather than
+perturbing in the degenerate subspace. The cancellation is built into
+the reduction $S = u_\perp^\dagger \star_2\, u_\perp$.
+
+% ============================================================================
+% APPENDIX B. DETAILED ANATOMY OF STANDARD DEC FAILURE
+% ============================================================================
+\section{Detailed anatomy of standard DEC failure}
+\label{app:std_anatomy}
+
+The standard DEC failure (\S\ref{sec:exactness}) has three structural
+features beyond $c \neq 1$.
+
+\emph{B.1: Mode mixing.}
+The lowest nonzero standard mode is $\sim 89\%$ gauge $+ 11\%$ acoustic
+(on Kelvin), as measured by overlap with the exact gauge subspace. Standard
+DEC does not merely shift speeds: it destroys the gauge/physical boundary.
+Higher modes ($1$--$5$) are $> 95\%$ gauge.
+
+\emph{B.2: Non-monotonic $N$-dependence.}
+The standard wave speed varies non-monotonically with supercell size:
+$c_{\mathrm{std}} = 1.25$ ($N\!=\!2$), $1.58$ ($N\!=\!3$), $1.39$
+($N\!=\!4$). The error does not converge with increasing~$N$---it is
+structural, not a finite-size artifact.
+
+\emph{B.3: TRIM collapse.}
+At unit-cell TRIM points ($k = \pi/L_{\mathrm{cell}}$), the Bloch phases
+$e^{ik \cdot \Delta x}$ are exactly~$\pm 1$, so
+$d_1(k)\, d_0(k) = 0$ automatically. Standard DEC becomes exact at these
+isolated $k$-points: $\|d_1 d_0\|$ drops from $O(1)$ to $\sim 10^{-15}$
+and eigenvalues match to machine precision.
+
+
+% ============================================================================
+% REPRODUCIBILITY
+% ============================================================================
+\section*{Reproducibility}
+
+All computations use Python~3.9, NumPy, SciPy (LAPACK/BLAS). Source code
+and a structured test suite (7~files, 42~tests) are available at
+\url{https://github.com/alex-toader/st_voronoi_maxwell}. The test suite
+covers: metric identity $G = H = \Vol \cdot I$ on ordered and random
+Voronoi tessellations, wave speed $c^2 = 1$ on 8~structures, the full
+proof chain (Schur complement, discrete curl, $H^2$ projection),
+admissible perturbation geometry, converse (non-Voronoi stars),
+isotropy and dispersion convergence, exactness removal ($c_{\mathrm{std}}$,
+anisotropy, leaked gradients, $n_{\mathrm{lost}}$), geometry removal
+(perturbed Hodge stars, killer table, error factorization), and spectral
+structure (moment conservation, girth). All numerical claims in this
+paper are backed by reproducible scripts.
+
+
+% ============================================================================
+% REFERENCES
+% ============================================================================
+\begin{thebibliography}{99}
+
+\bibitem{paper1}
+A.~Toader,
+\newblock Exactness-preserving discrete {M}axwell operators on periodic
+  polyhedral complexes,
+\newblock submitted to J. Comput. Phys. (2026).
+\newblock JCOMP-D-26-00537.
+
+\bibitem{hirani2003}
+A.~N.~Hirani,
+\newblock Discrete exterior calculus,
+\newblock PhD thesis, California Institute of Technology, 2003.
+
+\bibitem{desbrun2005}
+M.~Desbrun, A.~N.~Hirani, M.~Leok, J.~E.~Marsden,
+\newblock Discrete exterior calculus,
+\newblock arXiv:math/0508341, 2005.
+
+\bibitem{arnold2006}
+D.~N.~Arnold, R.~S.~Falk, R.~Winther,
+\newblock Finite element exterior calculus, homological techniques, and
+  applications,
+\newblock Acta Numer. 15 (2006) 1--155.
+
+\bibitem{bossavit1998}
+A.~Bossavit,
+\newblock Computational Electromagnetism,
+\newblock Academic Press, 1998.
+
+\end{thebibliography}
+
+\end{document}

@@ -163,10 +163,8 @@ from scipy.linalg import eigh
 # ---------------------------------------------------------------------------
 # Path setup: use st_bloch_exactness for Bloch operators + random foam builder
 # ---------------------------------------------------------------------------
-BLOCH_SRC = "/Users/alextoader/Sites/st_bloch_exactness/src"
-ST11_SRC = os.path.join(os.path.dirname(__file__), "..", "..", "src", "1_foam")
-sys.path.insert(0, os.path.abspath(ST11_SRC))
-sys.path.insert(0, BLOCH_SRC)
+SRC = os.path.join(os.path.dirname(__file__), "..", "src")
+sys.path.insert(0, os.path.abspath(SRC))
 
 from physics.hodge import (
     build_kelvin_with_dual_info,

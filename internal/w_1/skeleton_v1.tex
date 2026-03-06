@@ -1,0 +1,605 @@
+% ============================================================================
+% Skeleton v1 — "Geometry and topology of discrete Maxwell wave speed"
+% Companion to JCP Paper 1 (JCOMP-D-26-00537)
+% Target: J. Comput. Phys.
+% ============================================================================
+\documentclass[preprint,12pt]{elsarticle}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{booktabs}
+\usepackage{graphicx}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{remark}{Remark}
+
+\begin{document}
+
+\begin{frontmatter}
+\title{Geometry and topology of discrete Maxwell wave speed}
+\author{Alexandru Toader}
+
+\begin{abstract}
+% CONTENT: One paragraph. State the result, the two conditions, the proof
+% method, and the numerical verification scope.
+%
+% Key sentence: "On any periodic Voronoi complex equipped with an exact
+% cochain complex, the long-wavelength discrete electromagnetic wave speed
+% equals 1 in natural units. This is a geometric identity at finite
+% resolution, not a convergence statement."
+% (Clarification: ω² = k² + O(k⁴). Speed is exact; dispersion is not.
+% The O(k⁴) correction is structure-dependent.)
+%
+% Mention: (A) G = H = Vol·I from divergence theorem, (B) d₁d₀ = 0 from
+% recurrence construction [Paper 1]. Proof via Schur complement + discrete
+% curl identity. Verified on 3 ordered + 5 random meshes. Removing either
+% condition gives c ≠ 1 with O(1) error.
+\end{abstract}
+
+\begin{keyword}
+discrete exterior calculus \sep Maxwell equations \sep Voronoi tessellation
+\sep wave speed \sep cochain complex
+\end{keyword}
+\end{frontmatter}
+
+
+% ============================================================================
+% §1. INTRODUCTION
+% ============================================================================
+\section{Introduction}
+\label{sec:intro}
+
+% CONTENT: ~1.5 pages
+%
+% Para 1: The problem. DEC Maxwell on periodic polyhedral complexes.
+% Wave speed c should be determined by geometry, not fitted.
+%
+% Para 2: The result. c² = 1 (natural units) on any periodic Voronoi
+% complex with exact cochain complex. Two sufficient conditions:
+%   (A) Metric: G = H = Vol·I (Voronoi Hodge stars)
+%   (B) Topology: d₁d₀ = 0 (exactness-preserving construction [Paper 1])
+% Removing (A) alone or (B) alone gives c ≠ 1 with O(1) error (§4–§5).
+% Necessity of (A) is proved (converse, §3.3); necessity of (B) is
+% numerical (all tested violations give c ≠ 1).
+%
+% Para 3: What this means. The long-wavelength speed is exact at ANY finite
+% resolution — not a convergence result. The Voronoi DEC with exact complex
+% is "already homogenized" — no effective medium limit needed.
+% [Editorial item 10: "already homogenized" framing]
+%
+% Para 4: Relation to Paper 1. Paper 1 proves d₁d₀ = 0 (construction).
+% This paper proves the physical consequence: c = 1. Complementary.
+%
+% Para 5: Structure of the paper.
+%
+% TESTS: None directly. Motivation only.
+
+
+% ============================================================================
+% §2. METRIC IDENTITIES
+% ============================================================================
+\section{Metric identities: $G = H = \mathrm{Vol} \cdot I$}
+\label{sec:metric}
+
+% CONTENT: ~3 pages
+%
+% --- 2.1 Edge tensor G ---
+%
+% Define: G_ij = Σ_e ⋆₁[e] (Δx_e)_i (Δx_e)_j
+%
+% Theorem 1: On any periodic Voronoi tessellation in ℝ³,
+%   G = Vol · I
+%
+% Proof: Divergence theorem on each Voronoi cell with f(x) = x_i.
+% Four steps: (1) divergence theorem on each cell, (2) Voronoi
+% perpendicularity (face normal n_f ∥ edge vector Δx_e), (3) decompose
+% face integral: x = x_proj + δ_f where x_proj is on the cell-center line
+% and δ_f is in-plane offset from projection point to face centroid.
+% (4) Sum over both cells sharing each face.
+% Term 1 = 0 (closed cell). Term 2 = G_ij.
+% Term 3 (face centroid offset δ_f): does NOT vanish per-face, but cancels
+% pairwise. δ_f is a face-intrinsic quantity (the in-plane offset from
+% the projection point to the face centroid) — identical as seen from
+% either cell. The two cells sharing face f contribute opposite normals
+% ±n_j with the same δ_{f,i}, so the δ-terms cancel exactly.
+% NOTE: periodicity ensures every face in the unit cell has a partner
+% (boundary faces pair with their periodic image).
+% Result: G = Vol · I.
+%
+% TESTS NEEDED:
+%   - G = Vol·I on Kelvin, C15, WP (10⁻¹³)         [from R1]
+%   - G = Vol·I on random Voronoi (10⁻¹⁰)           [from R1]
+%   - G = Vol·I on degenerate Voronoi (10⁻¹²)       [from R34]
+%   - Per-vertex flux closure Term 1 = 0              [from T2]
+%
+% --- 2.2 Face tensor H ---
+%
+% Define: H_ij = Σ_f ⋆₂[f] (A_f)_i (A_f)_j
+%
+% Theorem 2: On any periodic Voronoi tessellation in ℝ³,
+%   H = Vol · I
+%
+% Proof: Apply the same divergence theorem argument to the DUAL complex.
+% The dual of a Voronoi tessellation is the Delaunay triangulation.
+% Key duality map:
+%   primal face f ↔ dual edge e* (connecting Voronoi cell centers)
+%   ⋆₂[f] = |e*|/|A_f| (dual edge length / primal face area)
+%
+% The dual perpendicularity needed: Voronoi edge ẽ ⊥ all Delaunay edges
+% bounding it. Proof: each Voronoi face containing ẽ is the perpendicular
+% bisector of its Delaunay edge e*. Since ẽ lies in that face, ẽ ⊥ e*.
+% Consequence: every Delaunay edge around ẽ has zero component along ẽ.
+% The polygon of cell centers around ẽ therefore lies in a plane ⊥ ẽ
+% (each consecutive pair (p_i, p_{i+1}) differs only in the plane ⊥ ẽ).
+% The dual face normal ∥ Voronoi edge direction.
+%
+% Apply divergence theorem on each dual cell (= Voronoi vertex star) with
+% f(x) = x_i. Same four steps: (1) divergence theorem, (2) dual perpendicularity
+% (dual face normal ∥ Voronoi edge), (3) decompose face integral into
+% projection + in-plane offset, (4) sum over both dual cells sharing each
+% dual face. Term 1 = 0 (closed dual cell). Term 3 cancels pairwise
+% (same argument as G proof — opposite normals cancel offset).
+% Result: H = Vol · I.
+%
+% Note: The argument is identical in structure to the G proof. The roles of
+% primal and dual swap: edges ↔ faces, ⋆₁ ↔ ⋆₂, Δx ↔ A_f.
+%
+% TESTS NEEDED:
+%   - H = Vol·I on Kelvin, C15, WP                   [from R2]
+%   - H = Vol·I on random Voronoi                     [from R2]
+%
+% --- 2.3 Admissible perturbations ---
+%
+% The set of Hodge stars ⋆₁ satisfying G = Vol·I is a codimension-6
+% submanifold in ℝ^|E|. Voronoi is one point; |E|−6 directions of
+% freedom preserve c = 1.
+%
+% Proposition: {Δx_e ⊗ Δx_e} span S²(ℝ³) for degree ≥ 4.
+%
+% TESTS NEEDED:
+%   - rank = 6 on all structures                      [from R37/N12]
+%   - admissible dimension = |E| − 6                  [from R37/N12]
+%   - Admissible cone radius 1.4–6× mean(⋆₁)         [from T5]
+%
+% --- 2.4 Numerical verification table ---
+%
+% Table: ||G/Vol − I|| and ||H/Vol − I|| on all tested structures.
+%
+% TESTS NEEDED:
+%   - Perpendicularity ê ⊥ A_f                        [from R3]
+%   - tr(G) = tr(H) = 3·Vol                           [from R4]
+%   - Domain scaling G → s³·I under V→sV, L→sL        [from T7]
+%
+% --- 2.5 Remark: tight frame ---
+%
+% The weighted edge vectors f_e = √⋆₁[e]·Δx_e form a tight frame
+% for ℝ³ with frame bound A = Vol: F†F = Vol·I. All 3 singular values
+% equal √Vol. G = Vol·I is Parseval-type isotropic quadrature.
+%
+% TESTS NEEDED:
+%   - Tight frame F†F = Vol·I, σ all equal             [from T4]
+
+
+% ============================================================================
+% §3. THEOREM: c² = 1
+% ============================================================================
+\section{Acoustic wave speed}
+\label{sec:theorem}
+
+% --- 3.1 Setup and statement ---
+\subsection{Setup and statement}
+\label{sec:setup}
+
+% CONTENT:
+%
+% Setup: K = d₁†⋆₂d₁ on 1-forms with mass M = ⋆₁. Bloch boundary
+% conditions at wavevector k. Generalized eigenvalue problem K ψ = ω² M ψ.
+%
+% Harmonic 1-forms at Γ: h_α = Δx_α / √Vol, α = 1,2,3.
+% M-orthonormal: h_α†Mh_β = G_{αβ}/Vol = δ_{αβ} (since G = Vol·I from §2).
+% Span H¹(T³) ≅ ℝ³.
+% At k ≠ 0: H¹(k) = 0 — verified numerically on all tested structures [R41].
+% (Dimension count: with exactness, dim ker(d₁) = V and dim im(d₀) = V at
+% generic k, consistent with H¹ = ker(d₁)/im(d₀) = 0.)
+% So the 3 harmonics deform into 1 gradient + 2 acoustic.
+%
+% H² cohomology at Γ: h₂_β = A_f^(β) / √Vol, β = 1,2,3.
+% S₂-orthonormal from H = Vol·I (§2). Span H²(T³) ≅ ℝ³.
+%
+% Theorem: On any periodic Voronoi complex with exact d₁d₀ = 0,
+%   ω² = |k|² + O(|k|⁴)
+% giving c² = 1 in natural units.
+%
+% TESTS NEEDED:
+%   - H¹(k≠0) = 0 on z=4 meshes                     [from R41]
+%   - c = 1 spectral on Kelvin, C15, WP              [from R5]
+%   - c = 1 on 5 random Voronoi seeds                [from R38]
+%   - c = 1 independent of box scale                  [from R32]
+%   - c = 1 along 5 k-directions (isotropy)           [from S1]
+%   - Dispersion O(k⁴): δc/k² → const                [from S2]
+
+% --- 3.2 Proof ---
+\subsection{Proof}
+\label{sec:proof}
+
+% CONTENT: The main proof. Theorem + Proof environment.
+%
+% Four ingredients:
+%   (1) H = Vol·I → h₂†S₂h₂ = I₃ (from §2)
+%   (2) d₁(0)·harm = 0 (curl of constant = 0, true on any complex)
+%   (3) Full cochain exactness: d₁(k)d₀(k) = 0 AND d₂(k)d₁(k) = 0.
+%       The first (from Paper 1) is the non-trivial condition: it ensures gauge
+%       decoupling (ker(K(k)) = im(d₀(k))), giving clean gauge/physical
+%       separation → Schur complement reduces to u_perp†S₂u_perp (L3).
+%       The second is a topological identity (∂² = 0 on any oriented cell
+%       complex) — it holds automatically and is NOT an additional condition.
+%       It ensures u = d₁(k)·h ∈ ker(d₂(k)), so im(d₂†) components are O(k²) (C4).
+%   (4) Discrete curl identity (Lemma below)
+%
+% Proof chain:
+%   u = d₁(k)·harm (= [d₁(k)−d₁(0)]·harm since d₁(0)·harm = 0, ingredient 2)
+%   Decompose u = u_exact + u_perp in face space (S₂-orthogonal to im(d₁(0)))
+%
+%   KEY STEP (C4): dim of S₂-complement of im(d₁(0)) in face space.
+%
+%   General dimension count (any periodic Voronoi on T³):
+%   Euler: V − E + F − C = 0 (C = number of 3-cells).
+%   dim ker(d₁(0)) = dim im(d₀(0)) + dim H¹ = (V−1) + 3 = V+2.
+%   rank(d₁(0)) = E − V − 2.
+%   dim complement = F − rank(d₁(0)) = F − E + V + 2 = C + 2.
+%
+%   By the Hodge decomposition of 2-forms: Ω² = im(d₁) ⊕ H² ⊕ im(d₂†).
+%   The complement decomposes as H²(T³) (dim 3) ⊕ im(d₂†) (dim C−1).
+%
+%   Only H² contributes at leading order. Key: d₂(k)·d₁(k) = 0 (ingredient 3),
+%   so u = d₁(k)·h ∈ ker(d₂(k)) at every k. Since ker(d₂(0)) = im(d₁(0)) ⊕ H²
+%   (Hodge decomposition), and u_im ∈ im(d₁(0)) has already been separated,
+%   the remaining u_perp must lie in H² at leading order.
+%   More precisely: at O(k), u ∈ ker(d₂(0)) + O(k²), so the im(d₂†)
+%   components enter only at O(k²), contributing O(k⁴) to ω².
+%   Therefore u_perp has only H² components at O(k):
+%     u_perp_α = Σ_β C_{βα} h₂_β + O(k²)
+%
+%   (For Bravais lattices C=1, im(d₂†)=0, complement = H² exactly.)
+%
+%   C_{βα} = h₂_β† S₂ u_perp_α = i ε_{βγα} k_γ + O(k²)    [from L1 below]
+%   S = u_perp† S₂ u_perp = C† (h₂†S₂h₂) C + O(k⁴) = C†C + O(k⁴)
+%     = [k×]ᵀ[k×] + O(k⁴) = k² P_T + O(k⁴)
+%   where C†C uses h₂†S₂h₂ = I₃ (from H = Vol·I, ingredient 1).
+%   Schur complement = u_perp† S₂ u_perp    [from L3 below]
+%   Eigenvalues: [0, k², k²] → c² = 1.   □
+%
+% --- Lemma (L1): Discrete curl identity ---
+%
+% Lemma: ∂/∂k_γ [h₂_β† S₂ d₁(k) h_α]|_{k=0} = i ε_{βγα}
+%
+% Proof:
+% d₁(k)[f,e] = d₁(0)[f,e] · exp(i k · n_e L), where n_e ∈ ℤ³ is the lattice
+% shift for edge e. Since d₁(0)·harm = 0 (ingredient 2), the k-derivative is:
+%
+%   ∂/∂k_γ [d₁(k) h_α]_f |₀ = i Σ_{e∈∂f} d₁(0)[f,e] · (n_e L)_γ · (Δx_e)_α / √Vol
+%
+% The sum Σ_{e∈∂f} d₁[f,e]·(n_e L)_γ·(Δx_e)_α is a discrete Stokes integral:
+% each term (n_e L)_γ · (Δx_e)_α is the γα-component of the parallelogram
+% n_e L × Δx_e. Summing around the face boundary gives the face area vector:
+%
+%   Σ_{e∈∂f} d₁[f,e] · (n_e L)_γ (Δx_e)_α = ε_{βγα} (A_f)_β
+%
+% (discrete Stokes: ∮_{∂f} x_γ dx_α = ∫_f (∂_α x_γ − ∂_γ x_α) dA
+% = ∫_f ε_{βγα} dA_β, since ∂_α x_γ − ∂_γ x_α = ε_{βγα} n_β on the face). Contracting with h₂_β† S₂ = (A_f)_β / √Vol · ⋆₂[f]:
+%
+%   ∂F_{βα}/∂k_γ|₀ = i · Σ_f (A_f)_β/√Vol · ⋆₂[f] · ε_{β'γα} (A_f)_{β'} / √Vol
+%                    = (i/Vol) ε_{β'γα} Σ_f ⋆₂[f] (A_f)_β (A_f)_{β'}
+%                    = (i/Vol) ε_{β'γα} H_{ββ'} = i ε_{βγα}
+%
+% where the last step uses H = Vol·I (ingredient 1). □
+%
+% Verified numerically: ||dF/dk/i − ε|| < 5×10⁻¹¹ on 3 cubic + 3 random [R44f].
+%
+% --- Lemma (L3): Schur complement reduction ---
+%
+% Lemma: The Schur complement of K(k) restricted to the harmonic subspace equals
+% u_perp† S₂ u_perp at leading order in k.
+%
+% Proof: Write K(k) = d₁(k)† S₂ d₁(k). In the basis {harm, optical, gauge}:
+%   H₃ = harm† K harm = u† S₂ u     (where u = d₁(k)·harm)
+%
+% GAUGE DECOUPLING (key use of exactness):
+% For any gauge mode g = d₀(k)φ: K(k)·g = d₁(k)†S₂·d₁(k)d₀(k)·φ = 0
+% because d₁(k)d₀(k) = 0 (exact complex). So gauge modes remain in ker K(k)
+% at ALL k — they decouple from the harmonic sector entirely.
+% The Schur complement therefore involves only optical modes.
+%
+% The Schur complement is S = H₃ − B·D⁻¹·B† where B couples harmonics to
+% optical modes and D is the optical block (D > 0 at Γ with gap ~ 0.54–0.60;
+% D(k) = D(0) + O(k) remains invertible at small k by continuity).
+% The optical modes at Γ span im(d₁(0)†) in edge space; their images under
+% d₁(0) span im(d₁(0)) in face space. Decompose:
+%   u = u_im + u_perp     (S₂-orthogonal, u_im ∈ im(d₁(0)))
+%
+% Then H₃ = u_im† S₂ u_im + u_perp† S₂ u_perp (cross terms vanish by S₂-orthogonality).
+% The term B·D⁻¹·B† is the S₂-projection of u onto im(d₁(0)), which equals
+% u_im† S₂ u_im. Therefore:
+%   S = H₃ − B·D⁻¹·B† = u_perp† S₂ u_perp
+%
+% Since u_perp ∈ H² at O(k) (im(d₂†) components are O(k²), see C4 above):
+%   S = C† (h₂† S₂ h₂) C + O(k⁴) = C† C + O(k⁴) = [k×]ᵀ[k×] + O(k⁴) = k² P_T
+%
+% Eigenvalues: [0, k², k²] → c² = 1.  □
+%
+% Verified: Schur eigenvalues [0, 1.000, 1.000]·k² on 3 cubic + 2 random [R44e].
+%
+% Verification table:
+%   Structure | H₃/k² | Schur/k² | ||dF/dk/i − ε||
+%   Kelvin, C15, WP, Rnd(42), Rnd(7)
+%
+% TESTS NEEDED:
+%   - Schur complement eigenvalues [0, k², k²]       [from R44e]
+%   - Discrete curl identity dF/dk = iε (tol 1e-8)   [from R44f]
+%   - Full proof chain + ||G−H|| < 1e-8              [from R44g]
+%   - u_perp transverse ∈ H² (frac > 0.999)          [from R44g/S5]
+%
+% --- O(k²) dispersion correction (M1) ---
+%
+% The O(k⁴) correction to ω² gives an O(k²) correction to c²:
+%   δc²/k² ≈ −0.104 (Kelvin), −0.022 (C15), −0.054 (WP).
+% Structure-dependent, from higher-order perturbation (3rd+ order in k).
+% The optical gap varies only 10% (0.54–0.60) across structures while
+% |δc²/k²| varies 5×, so the gap alone does not predict the correction.
+% This is a standard lattice dispersion artifact, analogous to ω = 2sin(k/2)
+% on a 1D chain.
+
+% --- 3.3 Converse ---
+\subsection{Converse: $c = 1$ implies metric isotropy}
+\label{sec:converse}
+
+% CONTENT: Short. Converse lemma.
+%
+% Lemma: On an exact complex (d₁d₀ = 0, d₂d₁ = 0), if
+% lim_{|k|→0} ω²/|k|² = 1 for all k̂ and all transverse polarizations
+% α ⊥ k̂, then G ∝ I and H ∝ I with the same constant.
+%
+% Proof: Assuming exactness (ingredient 3), the Schur complement derivation
+% (§3.2) works for GENERAL positive definite G, H. Key: projecting u onto H² via
+% P = h₂(H/Vol)⁻¹h₂†S₂, the H⁻¹ from the projector cancels with H from
+% the Gram matrix, giving u_perp = −(k×)_{βα}h₂_β (independent of H).
+% Then S = (1/Vol)(k×)ᵀH(k×) and mass = G/Vol.
+% The eigenvalue equation Sv = ω²(G/Vol)v at leading order gives:
+%   (k×α)ᵀ H (k×α) = ω² · αᵀ G α   for transverse α ⊥ k.
+%
+% Setting ω²/k² = 1:
+%
+% Choose specific (k, α) pairs to extract all components:
+%   k = e₃, α = e₁: H₂₂ = G₁₁
+%   k = e₃, α = e₂: H₁₁ = G₂₂
+%   k = e₁, α = e₂: H₃₃ = G₂₂
+%   k = e₁, α = e₃: H₂₂ = G₃₃
+% Combined: G₁₁ = G₂₂ = G₃₃ ≡ λ, H₁₁ = H₂₂ = H₃₃ = λ.
+%
+% For off-diagonals (using diagonals H_{ii}=G_{ii}=λ already established):
+%   k = (e₁+e₂)/√2, α = e₃: (k×α)ᵀH(k×α) = λ − H₁₂, k²αᵀGα = λ → H₁₂ = 0.
+%   k = e₃, α = (e₁+e₂)/√2: (k×α)ᵀH(k×α) = λ − H₁₂, k²αᵀGα = λ + G₁₂ → G₁₂ = 0.
+%   Similarly all 6 off-diagonals vanish (3 pairs of (k,α) choices).
+% Therefore G = H = λI. (On Voronoi, λ = Vol from §2, but c = 1 alone
+% fixes only the ratio H/G = I, not the absolute scale.)  □
+%
+% Note: This proves "only if" for condition (A): metric isotropy.
+% For condition (B), exactness d₁d₀ = 0, we have numerical evidence
+% only — all tested violations give c ≠ 1 — but no analytic proof that
+% leaked gauge modes always contaminate the lowest acoustic eigenvalue.
+%
+% TESTS NEEDED:
+%   - Non-Voronoi stars → c ≠ 1                      [from R6]
+
+
+% ============================================================================
+% §4. NECESSITY: REMOVING EXACTNESS
+% ============================================================================
+\section{Removing exactness: $d_1 d_0 \neq 0$}
+\label{sec:exactness}
+
+% CONTENT: ~2 pages body
+%
+% Standard DEC: same Hodge stars, but d₁ uses simple Bloch phasing
+% (not the exactness-preserving recurrence). d₁d₀ ≠ 0 at k ≠ 0.
+%
+% Three consequences:
+%   (1) c_std = 1.25 (Kelvin), 1.68 (C15), 1.48 (WP) — O(1) error
+%       On random Voronoi: c_std ∈ [0.61, 1.04] — can be subluminal
+%       or superluminal. Not systematically > 1.  [from R38]
+%   (2) No principal symbol: c²(k̂) = k̂ᵀCk̂ fit has RMS residual 0.38–0.74
+%   (3) Severe anisotropy: 37–70%
+%
+% Mechanism: H¹(k≠0) = 0 means ker(d₁_ex) = im(d₀). Standard breaks
+% d₁d₀ = 0, so gradient modes leak → spurious ω² > 0.
+% n_lost = Δrank(d₁) exactly. Leaked forms are 100% pure gradients.
+%
+% TESTS NEEDED:
+%   - c_std = 1.25–1.68 on cubic                     [from R12/I6]
+%   - δc = O(1), not O(k²)                           [from R25]
+%   - No consistent principal symbol                  [from R35/N16]
+%   - Severe anisotropy 37–70%                         [from R17]
+%   - n_lost = Δrank(d₁) identity                    [from R40/N19]
+%   - Leaked forms ⊂ im(d₀)                          [from R41/N13]
+%   - n_lost depends on k-direction                   [from R23]
+
+
+% ============================================================================
+% §5. NECESSITY: REMOVING GEOMETRY
+% ============================================================================
+\section{Removing geometry: perturbed Hodge stars}
+\label{sec:geometry}
+
+% CONTENT: ~1 page
+%
+% Exact complex + perturbed Hodge stars → c ≠ 1 but no gauge pollution
+% (n_lost = 0). Topology controls n_lost, geometry primarily controls speed.
+%
+% Proposition: ker(K) = ker(d₁) for any S₂ > 0 (since K = d₁†S₂d₁).
+% This is why n_lost is exactly independent of Hodge stars — mathematical
+% fact, not numerical observation.
+%
+% Error factorization: Δc ≈ Δc_geom + Δc_topo (approximately additive,
+% not exactly separable). Interaction = O(amplitude): cubic 0.025 at 10%,
+% 0.037 at 15%; random < 0.01 at 10%. Good to ~15% perturbation.
+%
+% c_EP can be > 1 (WP: 1.006) or < 1 (Kelvin: 0.979) — perturbation
+% doesn't force a direction. c_std on random: subluminal (0.47) to
+% superluminal (1.02) — wildly variable.
+%
+% Killer table (central figure of the paper, shown here for Kelvin;
+% full paper has all 3 cubic + 3 random):
+%   Config | d₁d₀=0 | G=Vol·I | c     | n_lost | aniso
+%   Exact+Voronoi     ✓   ✓     1.000    0      <10⁻⁴
+%   Exact+Perturbed   ✓   ✗     0.979    0       ~1%
+%   Standard+Voronoi  ✗   ✓     1.253    6       70%
+%   Standard+Perturbed ✗   ✗    1.257    6       71%
+%
+% TESTS NEEDED:
+%   - Killer table on 3 cubic (interact < 0.05)       [from R36/N15]
+%   - Killer table on 3 random (interact < 0.10)      [from R39]
+%   - Additivity at 5/10/15% amplitude                [from R29/M1]
+
+
+% ============================================================================
+% §6. SPECTRAL STRUCTURE OF THE ERROR
+% ============================================================================
+\section{Spectral structure: moment conservation and girth}
+\label{sec:spectral}
+
+% CONTENT: ~1.5 pages
+%
+% Theorem (Moment conservation): tr(K_ex^n) = tr(K_std^n) for n < girth(face_adj).
+% Proof: K^n = (d₁†S₂d₁)^n involves walks of length 2n on the bipartite
+% incidence graph B = (E ∪ F, ~). girth(B) = 2·girth(face_adj).
+% For 2n < girth(B), i.e. n < girth(face_adj), all walks are trees →
+% on a tree, each edge is traversed once forward and once back (opposite
+% orientation), so the phase factors cancel pairwise and the product of d₁
+% entries along the walk gives |d₁[f,e]|^{2n} = 1 regardless of phases →
+% tr(K_ex^n) = tr(K_std^n).
+% At n = girth(face_adj): a simple cycle exists. The holonomy (product of
+% Bloch phases around the cycle) differs between exact and standard d₁,
+% breaking the conservation.
+%
+% Verified: girth(face_adj) = 3 on all 3D Voronoi. tr(K^n) conserved for n=1,2.
+% Breaks at n=3 by 0.13–0.22%.
+%
+% Consequence: spectral difference is redistribution, not creation.
+% Same total, same variance, different shape at order 3.
+%
+% TESTS NEEDED:
+%   - tr(K^n) conserved n=1,2, breaks n=3              [from R22]
+%   - girth = 3, edge valence = 3 uniform             [from R21]
+
+
+% ============================================================================
+% §7. DISCUSSION
+% ============================================================================
+\section{Discussion}
+\label{sec:discussion}
+
+% CONTENT: ~1 page
+%
+% Para 1: Summary. c = 1 is geometric + topological. Not fitted,
+% not emergent from dynamics, not approximate.
+%
+% Para 2: "Already homogenized." Voronoi DEC with exact complex gives
+% c = 1 at any resolution. No effective medium theory needed.
+% The metric identities G = H = Vol·I are the discrete analog of a
+% trivially homogenized medium. [Editorial item 10]
+%
+% Para 3: Practical consequence. Error budget from separability:
+% metric quality (||G/Vol − I||) + topological quality (||d₁d₀||).
+% Each can be measured independently.
+%
+% Para 4: Dimension independence. The identity G = Vol_d · I_d holds
+% in any dimension d by the same divergence theorem argument.
+% [Remark only — full investigation is future work, N29]
+%
+% Para 5: Beyond Voronoi. The proof uses (A) G=H=Vol·I, (B) d₁d₀=0 and
+% d₂d₁=0, (C) dim H¹(T³)=3, (D) dF/dk=iε. (A) is geometric; (B) topological
+% (cochain exactness); (C) topological (Betti number β₁(T³)=3, always true
+% on the 3-torus); (D) follows from (A)+(B). For (A), the G proof needs
+% face normal ∥ edge (Voronoi perpendicularity); the H proof needs Voronoi
+% edge ⊥ Delaunay edges (dual perpendicularity, §2.2).
+% Power diagrams (Laguerre tessellations) satisfy this exactly — natural
+% candidate generalization. Term 3 cancellation not yet verified for power
+% diagrams. Formulate cautiously: "likely extends to power diagrams."
+% [From W2 investigation]
+%
+% Para 6: Dielectric extension. The metric identity extends to
+% piecewise constant ε using the harmonic mean prescription
+% ε_eff = 2/(1/ε₁ + 1/ε₂) at each face, giving c² = ⟨1/ε⟩_vol.
+% [Details in a forthcoming paper.]
+%
+% Para 7: Relation to Paper 1. Paper 1 provides (B); this paper
+% shows the physical consequence. Together: complete discrete Maxwell
+% on periodic Voronoi.
+%
+% TESTS: None. Discussion only.
+
+
+% ============================================================================
+% APPENDICES
+% ============================================================================
+\appendix
+
+% ============================================================================
+% APPENDIX A. WHY NAIVE PERTURBATION THEORY FAILS
+% ============================================================================
+\section{Why naive perturbation theory fails}
+\label{app:naive_pt}
+
+% CONTENT: ~1.5 pages. Supporting material for §3 (moved from §3.3).
+%
+% The Rayleigh quotient on harmonic forms gives R[h]/k² = 4.8–10.7, NOT 1.
+% Yet the eigenvector IS 99.999% harmonic. The Γ-harmonic subspace is not
+% K(k)-invariant. The eigenvalue emerges from three-way cancellation:
+%   h†Kh + 2Re(h†Kδψ) + δψ†Kδψ = k²
+%
+% Table: cancellation anatomy on Kelvin, C15, WP.
+%
+% What doesn't work: (a) direct Rayleigh, (b) gradient projection makes
+% it worse, (c) degenerate PT on full zero subspace gives c² ~ 25.
+% The Schur complement resolves it via block elimination, not perturbation.
+%
+% TESTS NEEDED:
+%   - Eigenvector 99.999% harmonic                    [from R44a]
+%   - R[h]/k² ≫ 1 yet ω²/k² = 1                     [from R44b]
+%   - Projection makes Rayleigh worse                 [from R44c]
+%   - Three-way cancellation                          [from R44d]
+%   - Plane wave overlap → 1                          [from R11]
+
+% ============================================================================
+% APPENDIX B. DETAILED ANATOMY OF STANDARD DEC FAILURE
+% ============================================================================
+\section{Detailed anatomy of standard DEC failure}
+\label{app:std_anatomy}
+
+% CONTENT: ~1.5 pages. Supporting material for §4.
+%
+% B.1 Mode mixing: lowest mode = 89% gauge + 11% acoustic.
+% B.2 N-dependence: c_std non-monotonic with supercell size.
+% B.3 TRIM collapse: standard = exact at k = π/L_cell.
+%
+% TESTS NEEDED:
+%   - Mode anatomy: 89% gauge + 11% acoustic          [from R16/R28]
+%   - c_std non-monotonic with N                      [from R20]
+%   - TRIM collapse                                   [from R27]
+
+
+% ============================================================================
+% REFERENCES
+% ============================================================================
+\begin{thebibliography}{99}
+% [1] Paper 1: Toader, "Exactness-preserving discrete Maxwell operators
+%     on periodic polyhedral complexes," submitted to J. Comput. Phys. (2026).
+%     JCOMP-D-26-00537.
+% [2] Hirani, "Discrete exterior calculus," PhD thesis (2003).
+% [3] Desbrun et al., "Discrete differential forms..." (2005).
+% [4] Bossavit, "Computational Electromagnetism" (1998).
+% [5] Arnold, Falk, Winther, "Finite element exterior calculus" (2006/2010).
+\end{thebibliography}
+
+\end{document}
